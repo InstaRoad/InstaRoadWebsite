@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jing Yeh — Task-Driven Super-Resolution for Road Segmentation | InstaRoad</title>
+  <meta name="description" content="Jing Yeh's InstaRoad sub-project: fine-tuning pretrained super-resolution models with the road-segmentation objective to extract roads from 10 m Sentinel-2 imagery.">
+  <meta name="author" content="Jing Yeh">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/bulma.min.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/fontawesome.all.min.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body id="top">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ===== Shared navigation (keep in sync across all pages) ===== -->
+<header class="site-nav">
+  <nav class="nav-inner" aria-label="Site">
+    <a class="nav-brand" href="../index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="#0f172a"/><path d="M7 29c2-8 7-11 11-14s6-7 7-12" fill="none" stroke="#f0a500" stroke-width="5.5" stroke-linecap="round"/><path d="M7 29c2-8 7-11 11-14s6-7 7-12" fill="none" stroke="#0f172a" stroke-width="1.2" stroke-dasharray="2.2 2.4"/></svg>
+      <span>InstaRoad</span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Project home</a>
+      <a href="../index.html#dataset">Dataset</a>
+      <a href="../index.html#demo">Demo</a>
+      <a href="../index.html#documents">Documents</a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="../li/index.html">Catherine Li</a>
+      <a href="../wei/index.html">Kelvin Wei</a>
+      <a href="../yeh/index.html" aria-current="page">Jing Yeh</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- ===== Header ===== -->
+  <section class="member-hero" aria-labelledby="page-title">
+    <div class="container is-max-desktop">
+      <div class="member-hero-inner">
+        <!-- Optional photo: <span class="avatar is-large is-yeh"><img src="img/photo.webp" alt="Jing Yeh"></span> -->
+        <span class="avatar is-large is-yeh" aria-hidden="true">JY</span>
+        <div>
+          <p class="eyebrow">Jing Yeh · Data-centric sub-project</p>
+          <h1 class="member-title" id="page-title">Task-Driven Super-Resolution+: Guiding Pretrained Super-Resolution to Enhance Road Segmentation from 10&nbsp;m Sentinel-2 Imagery</h1>
+          <p class="member-role">Jing fine-tuned pretrained super-resolution models directly on the road-segmentation objective, without any high-resolution imagery, and tested whether a heavy segmentation network is still needed afterwards.</p>
+          <p class="affiliation">Supervisors: Patrick Marais and Jonathan P. Shock · Department of Computer Science, University of Cape Town</p>
+        </div>
+      </div>
+      <div class="link-row is-left">
+        <a class="button is-dark is-rounded" href="final-paper.pdf">
+          <span class="icon"><i class="fas fa-file-pdf" aria-hidden="true"></i></span><span>Final paper</span>
+        </a>
+        <a class="button is-dark is-rounded" href="literature-review.pdf">
+          <span class="icon"><i class="fas fa-book-open" aria-hidden="true"></i></span><span>Literature review</span>
+        </a>
+        <a class="button is-dark is-rounded" href="#downloads">
+          <span class="icon"><i class="fas fa-file-archive" aria-hidden="true"></i></span><span>Code</span>
+        </a>
+        <a class="button is-rounded" href="../index.html">
+          <span class="icon"><i class="fas fa-arrow-left" aria-hidden="true"></i></span><span>Project home</span>
+        </a>
+      </div>
+      <nav class="local-nav" aria-label="On this page">
+        <a href="#contribution">Contribution</a>
+        <a href="#goals">Goals</a>
+        <a href="#method">Method</a>
+        <a href="#results">Results</a>
+        <a href="#findings">Findings</a>
+        <a href="#downloads">Downloads</a>
+        <a href="#cite">Cite</a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- ===== At a glance ===== -->
+  <section class="section pt-0" aria-label="At a glance">
+    <div class="container is-max-desktop">
+      <div class="stat-grid is-compact">
+        <div class="stat">
+          <span class="stat-value">73.20<span class="stat-unit">bF1</span></span>
+          <span class="stat-label">Best buffered F1: SR4RS fine-tuned through a linear head (TDSR-LP-FT)</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">48.38<span class="stat-unit">APLS</span></span>
+          <span class="stat-label">Best connectivity: SR4RS jointly trained with a U-Net (TDSR-JT)</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">5<span class="stat-unit">parameters</span></span>
+          <span class="stat-label">The whole road extractor in TDSR-LP-FT, versus 24.2 M for the U-Net</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">0<span class="stat-unit">high-res images</span></span>
+          <span class="stat-label">Only road labels supervise the super-resolution model</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Contribution ===== -->
+  <section class="section is-alt" id="contribution" aria-labelledby="contribution-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="contribution-title">Contribution</h2>
+      <div class="contribution is-yeh">
+        <p class="prose">
+          Jing's sub-project treats super-resolution not as a fixed preprocessing step but as a trainable part of the
+          road extractor, guided only by road labels.
+          <span class="todo">TODO: Jing to confirm wording</span>
+        </p>
+        <ul class="check-list">
+          <li><strong>TDSR-JT.</strong> Joint fine-tuning of a pretrained super-resolution model (SEN2SR-Lite or SR4RS) and a ResNet-34 U-Net using only the segmentation loss, with differential learning rates.</li>
+          <li><strong>Adaptive standardisation.</strong> An exponential-moving-average normaliser that keeps the U-Net's input statistics in step with the changing super-resolved output.</li>
+          <li><strong>Fourier constraint study.</strong> Crossed SEN2SR-Lite's Fourier-based hard constraint with both models to separate its effect from the choice of architecture.</li>
+          <li><strong>TDSR-LP-FT.</strong> Replaced the U-Net with a five-parameter logistic head (linear probe, then fine-tune) to test whether the super-resolution model alone can learn road structure.</li>
+          <li><strong>Loss and statistics.</strong> A pilot study of road-specific losses (GapLoss selected), bootstrap confidence intervals, exact Wilcoxon tests and Hochberg correction over nine test regions.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Goals ===== -->
+  <section class="section" id="goals" aria-labelledby="goals-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="goals-title">Goals and research questions</h2>
+      <p class="prose">
+        At 10&nbsp;m, most roads are one or two pixels wide. Super-resolution should help, but earlier work found
+        that pretrained super-resolution used as a fixed preprocessing step does worse than simple bicubic
+        interpolation: the models are trained for visual quality or pixel reconstruction, not for finding roads.
+        Retraining them needs high-resolution imagery, which is unavailable or out of date for most of South
+        Africa. Jing therefore adapts pretrained models using road labels alone.
+      </p>
+      <h3 class="subsection-title">Research questions</h3>
+      <ol class="rq-list">
+        <li>Can a pretrained super-resolution model be guided by road-segmentation supervision to produce outputs that improve downstream road extraction from 10&nbsp;m Sentinel-2 imagery?</li>
+        <li>How does task-driven adaptation affect the image fidelity and behaviour of the super-resolution model, and to what extent can architectural constraints preserve image-like outputs while retaining task performance?</li>
+        <li>To what extent is a high-capacity downstream road extractor necessary once the super-resolution model has been adapted for the task?</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===== Method ===== -->
+  <section class="section is-alt" id="method" aria-labelledby="method-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="method-title">Method</h2>
+      <figure class="figure">
+        <a href="img/tdsr-pipeline.webp" title="Open full-size image">
+          <img src="img/tdsr-pipeline.webp" width="1528" height="628" loading="lazy"
+               alt="TDSR-JT architecture: a 10 m Sentinel-2 input passes through a pretrained ×4 super-resolution model, an optional Fourier-based hard constraint that mixes in bicubic low frequencies, adaptive standardisation and a ResNet-34 U-Net; the segmentation loss updates both the super-resolution model and the U-Net.">
+        </a>
+        <figcaption><strong>TDSR-JT.</strong> The segmentation loss alone updates both the pretrained super-resolution model (learning rate α) and the U-Net (β). The Fourier-based hard constraint is used only in the "a" variants.</figcaption>
+      </figure>
+      <h3 class="subsection-title">Key steps</h3>
+      <ol class="steps">
+        <li><strong>Input.</strong> Sentinel-2 red, green, blue and near-infrared bands at 10&nbsp;m from ROSA, as 128 × 128 patches with flip and rotation augmentation.</li>
+        <li><strong>Super-resolve ×4 to 2.5&nbsp;m.</strong> SEN2SR-Lite (CNN, 0.57 M parameters, reconstruction loss) or SR4RS (GAN, 11.8 M parameters), optionally with the Fourier constraint that keeps the bicubic image's low frequencies.</li>
+        <li><strong>Re-standardise.</strong> Adaptive standardisation tracks each band's mean and variance with an exponential moving average as the super-resolved output changes.</li>
+        <li><strong>Extract roads.</strong> A ResNet-34 U-Net (TDSR-JT) or a single 1 × 1 convolution with five parameters (TDSR-LP-FT).</li>
+        <li><strong>Train on the task loss only.</strong> GapLoss with separate learning rates for the two modules; 30 Optuna trials per configuration, then 100-epoch refits on three seeds.</li>
+        <li><strong>Evaluate.</strong> Buffered F1 at 3&nbsp;px (7.5&nbsp;m) tolerance, APLS and clDice, with bootstrap confidence intervals and Hochberg-adjusted Wilcoxon tests over nine test regions.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===== Results ===== -->
+  <section class="section" id="results" aria-labelledby="results-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="results-title">Results</h2>
+
+      <figure class="table-figure">
+        <figcaption><strong>Overall test results</strong> in percentage points (macro means over 3 seeds). bF1, bP and bR are buffered F1, precision and recall at 3&nbsp;px tolerance. FHC = Fourier-based hard constraint. Bold marks the best bF1, bP and APLS.</figcaption>
+        <div class="table-container">
+          <table class="table results is-hoverable is-fullwidth">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Configuration</th>
+                <th scope="col" class="num">bF1</th>
+                <th scope="col" class="num">bP</th>
+                <th scope="col" class="num">bR</th>
+                <th scope="col" class="num">APLS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="is-group"><th scope="rowgroup" colspan="6">Reference</th></tr>
+              <tr><th scope="row">R0</th><td>Bicubic ×4 + U-Net</td><td class="num">71.55</td><td class="num">88.81</td><td class="num">61.95</td><td class="num">47.47</td></tr>
+              <tr class="is-group"><th scope="rowgroup" colspan="6">SEN2SR-Lite</th></tr>
+              <tr><th scope="row">R1a</th><td>Frozen SR + FHC</td><td class="num">71.30</td><td class="num">88.36</td><td class="num">61.88</td><td class="num">44.91</td></tr>
+              <tr><th scope="row">R1b</th><td>Frozen SR</td><td class="num">72.43</td><td class="num">88.60</td><td class="num">63.05</td><td class="num">47.60</td></tr>
+              <tr class="is-ours"><th scope="row">R2a</th><td>TDSR-JT + FHC</td><td class="num">72.87</td><td class="num">88.51</td><td class="num">63.84</td><td class="num">46.71</td></tr>
+              <tr class="is-ours"><th scope="row">R2b</th><td>TDSR-JT</td><td class="num">72.27</td><td class="num">88.65</td><td class="num">62.90</td><td class="num">47.96</td></tr>
+              <tr class="is-ours"><th scope="row">RL2<sup>†</sup></th><td>TDSR-LP-FT</td><td class="num">27.90</td><td class="num">20.89</td><td class="num">89.14</td><td class="num">2.54</td></tr>
+              <tr class="is-group"><th scope="rowgroup" colspan="6">SR4RS</th></tr>
+              <tr><th scope="row">R3a</th><td>Frozen SR + FHC</td><td class="num">69.53</td><td class="num">88.54</td><td class="num">59.29</td><td class="num">42.24</td></tr>
+              <tr><th scope="row">R3b</th><td>Frozen SR</td><td class="num">70.26</td><td class="num">87.01</td><td class="num">60.85</td><td class="num">45.27</td></tr>
+              <tr class="is-ours"><th scope="row">R4a</th><td>TDSR-JT + FHC</td><td class="num">72.43</td><td class="num">86.03</td><td class="num">63.88</td><td class="num">47.25</td></tr>
+              <tr class="is-ours"><th scope="row">R4b</th><td>TDSR-JT</td><td class="num">72.80</td><td class="num best">89.62</td><td class="num">62.96</td><td class="num best">48.38</td></tr>
+              <tr class="is-ours"><th scope="row">RL4</th><td>TDSR-LP-FT (5-parameter head)</td><td class="num best">73.20</td><td class="num">86.75</td><td class="num">65.12</td><td class="num">45.74</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </figure>
+      <p class="note"><sup>†</sup> RL2 was unstable: two of three refits collapsed toward predicting road everywhere.</p>
+
+      <h3 class="subsection-title">Visual results</h3>
+      <figure class="figure">
+        <a href="img/durban-upsamplers.webp" title="Open full-size image">
+          <img src="img/durban-upsamplers.webp" width="1444" height="428" loading="lazy"
+               alt="A small 10 m Sentinel-2 image of Durban next to three ×4 upsampled versions: bicubic (blurry), SEN2SR-Lite (slightly sharper) and SR4RS (sharp, detailed).">
+        </a>
+        <figcaption><strong>Three ×4 upsamplers on a 1.28&nbsp;km Durban scene.</strong> Bicubic adds no detail; SEN2SR-Lite adds conservative texture; the GAN-based SR4RS synthesises sharp but partly hallucinated detail.</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <div class="tile-grid">
+          <figure>
+            <img src="img/unet-input-bicubic.webp" width="258" height="258" loading="lazy"
+                 alt="Bicubic-upsampled Sentinel-2 image of a suburb with a highway, in natural colours">
+            <figcaption>Bicubic ×4<span>R0 reference</span></figcaption>
+          </figure>
+          <figure>
+            <img src="img/unet-input-sen2sr-lite.webp" width="258" height="258" loading="lazy"
+                 alt="The same scene after task-driven SEN2SR-Lite, with a slight colour shift">
+            <figcaption>SEN2SR-Lite, task-driven<span>R2b, no constraint</span></figcaption>
+          </figure>
+          <figure>
+            <img src="img/unet-input-sr4rs.webp" width="258" height="258" loading="lazy"
+                 alt="The same scene after task-driven SR4RS, rendered in red pseudo-colour with roads outlined brightly">
+            <figcaption>SR4RS, task-driven<span>R4b, no constraint</span></figcaption>
+          </figure>
+          <figure>
+            <img src="img/ground-truth.webp" width="258" height="258" loading="lazy"
+                 alt="Ground-truth road mask for the scene: white roads on black">
+            <figcaption>Ground truth<span>CD:NGI road mask</span></figcaption>
+          </figure>
+        </div>
+        <figcaption><strong>What the U-Net sees.</strong> Trained only on the road-segmentation loss, the unconstrained models drift away from natural colours; SR4RS's output becomes a pseudo-colour image in which roads stand out.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== Findings and limitations ===== -->
+  <section class="section is-alt" id="findings" aria-labelledby="findings-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="findings-title">Findings and limitations</h2>
+      <div class="columns is-variable is-5">
+        <div class="column is-7">
+          <h3 class="subsection-title mt-0">What we found</h3>
+          <ul class="finding-list">
+            <li><strong>Frozen super-resolution does not beat bicubic.</strong> This replicates earlier work; frozen SR4RS even degrades segmentation (bF1 69.53–70.26 vs 71.55).</li>
+            <li><strong>Task-driven training recovers the loss.</strong> Joint training improves three of four matched configurations, with strong evidence for SR4RS; SEN2SR-Lite shows suggestive gains over bicubic.</li>
+            <li><strong>A five-parameter head can be enough.</strong> SR4RS with TDSR-LP-FT beats bicubic + U-Net on buffered F1 (adjusted p = 0.016) with about a third of the training time per epoch of SR4RS + U-Net.</li>
+            <li><strong>The Fourier constraint keeps images realistic but does not help the task.</strong> It preserves radiometric consistency, but gives no consistent bF1 gain, and APLS point estimates favour the unconstrained models.</li>
+            <li><strong>Pixel gains do not guarantee connectivity.</strong> The models with the best buffered F1 are not the best on APLS.</li>
+          </ul>
+        </div>
+        <div class="column is-5">
+          <h3 class="subsection-title mt-0">Limitations</h3>
+          <ul class="finding-list is-limits">
+            <li>One geographic region and two super-resolution architectures, using RGB and NIR bands only.</li>
+            <li>SEN2SR-Lite was unstable with the minimal head.</li>
+            <li>Patches are processed independently, so confidence can drop at patch boundaries.</li>
+            <li>Thresholds were chosen on training data, so some faint roads are lost at binarisation.</li>
+            <li>Railways and other linear features are easily confused with roads at 10&nbsp;m.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Downloads & citation ===== -->
+  <section class="section" id="downloads" aria-labelledby="downloads-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="downloads-title">Downloads</h2>
+      <div class="doc-list">
+        <a class="doc" href="final-paper.pdf">
+          <i class="fas fa-file-pdf doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">Final paper</span><span class="doc-meta">Task-Driven Super-Resolution+: Guiding Pretrained Super-Resolution to Enhance Road Segmentation from 10 m Sentinel-2 Imagery</span></span>
+          <span class="doc-size">PDF · 20.1 MB</span>
+        </a>
+        <a class="doc" href="literature-review.pdf">
+          <i class="fas fa-file-pdf doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">Literature review</span><span class="doc-meta">InstaRoad: Detecting Road Networks from Medium Resolution Satellite Imagery</span></span>
+          <span class="doc-size">PDF · 421 KB</span>
+        </a>
+        <div class="doc is-missing">
+          <i class="fas fa-file-archive doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">Source code</span><span class="doc-meta">yeh/yeh_code.zip: TDSR-JT, TDSR-LP-FT, adaptive standardisation, loss study</span></span>
+          <span class="doc-size"><span class="todo">TODO</span></span>
+        </div>
+        <a class="doc" href="../index.html#dataset">
+          <i class="fas fa-database doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">ROSA dataset</span><span class="doc-meta">Shared dataset: see the project page</span></span>
+          <span class="doc-size">Project page</span>
+        </a>
+      </div>
+
+      <h3 class="subsection-title" id="cite">Cite this work</h3>
+      <div class="bibtex">
+        <button class="button is-small is-light copy-btn" type="button" data-copy="bibtex-yeh">
+          <span class="icon"><i class="fas fa-copy" aria-hidden="true"></i></span><span class="copy-label">Copy</span>
+        </button>
+        <pre id="bibtex-yeh">@techreport{yeh2026tdsr,
+  author      = {Yeh, Jing J. and Marais, Patrick and Shock, Jonathan P.},
+  title       = {Task-Driven Super-Resolution+: Guiding Pretrained Super-Resolution
+                 to Enhance Road Segmentation from 10 m {Sentinel-2} Imagery},
+  institution = {Department of Computer Science, University of Cape Town},
+  type        = {Honours project report},
+  year        = {2026}
+}</pre>
+      </div>
+
+      <a class="back-home" href="../index.html"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to the InstaRoad project page</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== Shared footer (keep in sync across all pages) ===== -->
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <p class="footer-title">InstaRoad · UCT Computer Science Honours Project, 2026</p>
+      <p>Catherine Li, Kelvin Wei and Jing Yeh, supervised by Patrick Marais and Jonathan Shock. Department of Computer Science, University of Cape Town.</p>
+      <p>Built with the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template">Academic Project Page Template</a>, adapted from <a href="https://nerfies.github.io">Nerfies</a>, and licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+    </div>
+    <nav aria-label="Footer">
+      <ul class="footer-links">
+        <li><a href="../index.html">Project home</a></li>
+        <li><a href="../li/index.html">Catherine Li</a></li>
+        <li><a href="../wei/index.html">Kelvin Wei</a></li>
+        <li><a href="../yeh/index.html">Jing Yeh</a></li>
+        <li><a href="#top">Back to top</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+<a class="to-top" href="#top" aria-label="Back to top"><i class="fas fa-chevron-up" aria-hidden="true"></i></a>
+</body>
+</html>

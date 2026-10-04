@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catherine Li — Adapting TerraMind for Road Extraction | InstaRoad</title>
+  <meta name="description" content="Catherine Li's InstaRoad sub-project: adapting the TerraMind geospatial foundation model for road extraction from 10 m Sentinel-1/2 imagery and benchmarking it against U-Net and D-LinkNet.">
+  <meta name="author" content="Catherine Li">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/bulma.min.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/fontawesome.all.min.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body id="top">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ===== Shared navigation (keep in sync across all pages) ===== -->
+<header class="site-nav">
+  <nav class="nav-inner" aria-label="Site">
+    <a class="nav-brand" href="../index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="#0f172a"/><path d="M7 29c2-8 7-11 11-14s6-7 7-12" fill="none" stroke="#f0a500" stroke-width="5.5" stroke-linecap="round"/><path d="M7 29c2-8 7-11 11-14s6-7 7-12" fill="none" stroke="#0f172a" stroke-width="1.2" stroke-dasharray="2.2 2.4"/></svg>
+      <span>InstaRoad</span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Project home</a>
+      <a href="../index.html#dataset">Dataset</a>
+      <a href="../index.html#demo">Demo</a>
+      <a href="../index.html#documents">Documents</a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="../li/index.html" aria-current="page">Catherine Li</a>
+      <a href="../wei/index.html">Kelvin Wei</a>
+      <a href="../yeh/index.html">Jing Yeh</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- ===== Header ===== -->
+  <section class="member-hero" aria-labelledby="page-title">
+    <div class="container is-max-desktop">
+      <div class="member-hero-inner">
+        <!-- Optional photo: <span class="avatar is-large is-li"><img src="img/photo.webp" alt="Catherine Li"></span> -->
+        <span class="avatar is-large is-li" aria-hidden="true">CL</span>
+        <div>
+          <p class="eyebrow">Catherine Li · Model-centric sub-project</p>
+          <h1 class="member-title" id="page-title">Adapting and Benchmarking TerraMind Against Task-Specific Baselines for Multi-Modal Road Extraction across Urban, Peri-Urban and Rural Regions</h1>
+          <p class="member-role">Catherine adapted TerraMind, a multi-modal geospatial foundation model, for 10&nbsp;m road segmentation by comparing decoders and LoRA fine-tuning, and benchmarked it against task-specific U-Net and D-LinkNet models.</p>
+          <p class="affiliation">Supervisors: Patrick Marais and Jonathan Shock · Department of Computer Science, University of Cape Town</p>
+        </div>
+      </div>
+      <div class="link-row is-left">
+        <a class="button is-dark is-rounded" href="final-paper.pdf">
+          <span class="icon"><i class="fas fa-file-pdf" aria-hidden="true"></i></span><span>Final paper</span>
+        </a>
+        <a class="button is-dark is-rounded" href="literature-review.pdf">
+          <span class="icon"><i class="fas fa-book-open" aria-hidden="true"></i></span><span>Literature review</span>
+        </a>
+        <a class="button is-dark is-rounded" href="#downloads">
+          <span class="icon"><i class="fas fa-file-archive" aria-hidden="true"></i></span><span>Code</span>
+        </a>
+        <a class="button is-rounded" href="../index.html">
+          <span class="icon"><i class="fas fa-arrow-left" aria-hidden="true"></i></span><span>Project home</span>
+        </a>
+      </div>
+      <nav class="local-nav" aria-label="On this page">
+        <a href="#contribution">Contribution</a>
+        <a href="#goals">Goals</a>
+        <a href="#method">Method</a>
+        <a href="#results">Results</a>
+        <a href="#findings">Findings</a>
+        <a href="#downloads">Downloads</a>
+        <a href="#cite">Cite</a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- ===== At a glance ===== -->
+  <section class="section pt-0" aria-label="At a glance">
+    <div class="container is-max-desktop">
+      <div class="stat-grid is-compact">
+        <div class="stat">
+          <span class="stat-value">0.486<span class="stat-unit">IoU</span></span>
+          <span class="stat-label">U-Net (ResNet-34): the strongest model overall</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">0.415<span class="stat-unit">IoU</span></span>
+          <span class="stat-label">Best TerraMind adaptation: FCN decoder with full fine-tuning</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">¼<span class="stat-unit">of the parameters</span></span>
+          <span class="stat-label">U-Net uses 24.5 M parameters vs 101 M for TerraMind + FCN</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">39<span class="stat-unit">vs 222 min</span></span>
+          <span class="stat-label">Training time, U-Net vs TerraMind + FCN</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Contribution ===== -->
+  <section class="section is-alt" id="contribution" aria-labelledby="contribution-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="contribution-title">Contribution</h2>
+      <div class="contribution is-li">
+        <p class="prose">
+          Catherine's sub-project tests whether a geospatial foundation model pretrained on Sentinel data can match
+          smaller, task-specific networks for road extraction across urban, peri-urban and rural South Africa.
+          <span class="todo">TODO: Catherine to confirm wording</span>
+        </p>
+        <ul class="check-list">
+          <li><strong>TerraMind adaptation framework.</strong> Built in TerraTorch with 12-band Sentinel-1/2 input; compared Linear, FCN, UPerNet, U-Net and DSCNet decoders under full fine-tuning.</li>
+          <li><strong>DSCNet decoder port.</strong> Decoupled the Dynamic Snake Convolution decoder from its original model and registered it with TerraTorch for multi-scale TerraMind features.</li>
+          <li><strong>LoRA study.</strong> Parameter-efficient fine-tuning across target modules (attention, MLP, all) and ranks 4, 16 and 64, with a generalisation-gap analysis.</li>
+          <li><strong>Baselines.</strong> Integrated D-LinkNet into TerraTorch for multi-band input and benchmarked it alongside U-Net, both with ResNet-34 encoders.</li>
+          <li><strong>Evaluation.</strong> Bayesian hyperparameter optimisation, three seeds per configuration, six metrics (precision, recall, F1, IoU, clDice, APLS) and per-urbanisation breakdowns.</li>
+          <li><strong>Dataset.</strong> Identified urban sampling regions across biomes and inspected the test-split labels. <span class="todo">TODO: confirm</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Goals ===== -->
+  <section class="section" id="goals" aria-labelledby="goals-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="goals-title">Goals and research questions</h2>
+      <p class="prose">
+        Geospatial foundation models are pretrained on vast amounts of unlabelled satellite data and promise strong
+        results with little task-specific tuning. TerraMind is multi-modal, taking Sentinel-1 radar and Sentinel-2
+        optical input together, and was the only foundation model reported to beat a task-specific U-Net on the
+        PANGAEA benchmark. Roads, however, are often narrower than a 10&nbsp;m pixel, so it is unclear whether a
+        transformer that sees the image as 16 × 16-pixel patches can resolve them.
+      </p>
+      <h3 class="subsection-title">Research questions</h3>
+      <ol class="rq-list">
+        <li>Which of the five decoders investigated maximises TerraMind's road segmentation performance?</li>
+        <li>By varying LoRA's target module and rank, to what extent can LoRA recover the performance of full fine-tuning?</li>
+        <li>How does TerraMind's best-performing variant compare with the medium-sized U-Net and D-LinkNet models across the performance metrics?</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===== Method ===== -->
+  <section class="section is-alt" id="method" aria-labelledby="method-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="method-title">Method</h2>
+      <div class="columns is-variable is-6">
+        <div class="column is-5">
+          <figure class="figure is-narrow">
+            <img src="img/terramind-architecture.webp" width="503" height="600" loading="lazy"
+                 alt="TerraMind adaptation pipeline: Sentinel-1 GRD and Sentinel-2 L2A inputs are normalised, split into patches and embedded, passed through the TerraMind backbone, then a neck and task decoder output a road mask.">
+            <figcaption><strong>TerraMind adaptation pipeline.</strong> Each 16 × 16-pixel patch (160&nbsp;m × 160&nbsp;m) becomes one token; a neck and task decoder turn the tokens back into a road mask.</figcaption>
+          </figure>
+        </div>
+        <div class="column is-7">
+          <ol class="steps">
+            <li><strong>Input.</strong> Twelve bands, Sentinel-1 GRD (VV, VH) and Sentinel-2 L2A (RGB, red edge, NIR, SWIR), as 256 × 256 crops with dataset-specific normalisation and flip/rotation augmentation.</li>
+            <li><strong>Encode.</strong> TerraMind v1 Base embeds each modality's 16 × 16 patches as 768-d tokens and processes them with a 12-layer vision transformer.</li>
+            <li><strong>Decode.</strong> A neck reshapes tokens into feature maps (a learned pyramid for multi-scale decoders); one of five decoders predicts the road mask.</li>
+            <li><strong>Fine-tune.</strong> Full fine-tuning, or LoRA on attention, MLP or all modules with rank 4, 16 or 64.</li>
+            <li><strong>Baselines.</strong> U-Net and D-LinkNet with ImageNet ResNet-34 encoders adapted for 12 input bands.</li>
+            <li><strong>Train and evaluate.</strong> Dice loss, AdamW, learning rate from Bayesian optimisation, early stopping and three seeds; six metrics on the test split, overall and by urbanisation.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Results ===== -->
+  <section class="section" id="results" aria-labelledby="results-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="results-title">Results</h2>
+
+      <figure class="table-figure">
+        <figcaption><strong>Baselines vs the best TerraMind adaptation</strong> on the ROSA test split (mean ± std over 3 seeds). Best value per column in bold.</figcaption>
+        <div class="table-container">
+          <table class="table results is-hoverable is-fullwidth">
+            <thead>
+              <tr>
+                <th scope="col">Model</th>
+                <th scope="col" class="num">Params (M)</th>
+                <th scope="col" class="num">Precision</th>
+                <th scope="col" class="num">Recall</th>
+                <th scope="col" class="num">F1</th>
+                <th scope="col" class="num">IoU</th>
+                <th scope="col" class="num">clDice</th>
+                <th scope="col" class="num">APLS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">U-Net</th><td class="num">24.5</td>
+                <td class="num best">0.658 ± 0.005</td><td class="num best">0.651 ± 0.008</td><td class="num best">0.654 ± 0.002</td>
+                <td class="num best">0.486 ± 0.003</td><td class="num best">0.575 ± 0.003</td><td class="num">0.447 ± 0.003</td>
+              </tr>
+              <tr>
+                <th scope="row">D-LinkNet</th><td class="num">31.1</td>
+                <td class="num">0.552 ± 0.005</td><td class="num">0.615 ± 0.018</td><td class="num">0.582 ± 0.006</td>
+                <td class="num">0.410 ± 0.006</td><td class="num">0.537 ± 0.005</td><td class="num best">0.451 ± 0.007</td>
+              </tr>
+              <tr class="is-ours">
+                <th scope="row">TerraMind + FCN</th><td class="num">101</td>
+                <td class="num">0.587 ± 0.007</td><td class="num">0.586 ± 0.003</td><td class="num">0.586 ± 0.005</td>
+                <td class="num">0.415 ± 0.005</td><td class="num">0.478 ± 0.002</td><td class="num">0.392 ± 0.005</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </figure>
+
+      <figure class="table-figure">
+        <figcaption><strong>Decoder comparison</strong> for TerraMind with full fine-tuning (mean over 3 seeds; all standard deviations ≤ 0.013). Best value per column in bold.</figcaption>
+        <div class="table-container">
+          <table class="table results is-hoverable is-fullwidth">
+            <thead>
+              <tr>
+                <th scope="col">Decoder</th>
+                <th scope="col" class="num">Precision</th>
+                <th scope="col" class="num">Recall</th>
+                <th scope="col" class="num">F1</th>
+                <th scope="col" class="num">IoU</th>
+                <th scope="col" class="num">clDice</th>
+                <th scope="col" class="num">APLS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Linear</th><td class="num">0.568</td><td class="num">0.581</td><td class="num">0.575</td><td class="num">0.403</td><td class="num best">0.490</td><td class="num">0.291</td></tr>
+              <tr class="is-ours"><th scope="row">FCN</th><td class="num best">0.587</td><td class="num">0.586</td><td class="num best">0.586</td><td class="num best">0.415</td><td class="num">0.478</td><td class="num best">0.392</td></tr>
+              <tr><th scope="row">U-Net</th><td class="num">0.527</td><td class="num best">0.588</td><td class="num">0.556</td><td class="num">0.385</td><td class="num">0.455</td><td class="num">0.354</td></tr>
+              <tr><th scope="row">UPerNet</th><td class="num">0.523</td><td class="num">0.584</td><td class="num">0.552</td><td class="num">0.381</td><td class="num">0.463</td><td class="num">0.331</td></tr>
+              <tr><th scope="row">DSCNet</th><td class="num">0.491</td><td class="num">0.574</td><td class="num">0.529</td><td class="num">0.360</td><td class="num">0.446</td><td class="num">0.324</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </figure>
+
+      <figure class="table-figure">
+        <figcaption><strong>LoRA vs full fine-tuning</strong> (TerraMind + Linear decoder; LoRA on all modules, rank 16). LoRA overfits less but cannot reach full fine-tuning; the best LoRA setting (all modules, rank 64) reaches IoU 0.377.</figcaption>
+        <div class="table-container">
+          <table class="table results is-fullwidth">
+            <thead>
+              <tr><th scope="col">Fine-tuning</th><th scope="col" class="num">Test IoU</th><th scope="col" class="num">Train IoU</th><th scope="col" class="num">Relative generalisation gap</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Full</th><td class="num best">0.403 ± 0.002</td><td class="num">0.497 ± 0.010</td><td class="num">18.8%</td></tr>
+              <tr><th scope="row">LoRA</th><td class="num">0.373 ± 0.003</td><td class="num">0.339 ± 0.003</td><td class="num best">−9.0%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </figure>
+
+      <h3 class="subsection-title">Example predictions</h3>
+      <figure class="figure">
+        <a href="img/prediction-grid.webp" title="Open full-size image">
+          <img src="img/prediction-grid.webp" width="1511" height="878" loading="lazy"
+               alt="Grid of three test tiles (rural forest, peri-urban coastal belt, urban fynbos) showing the Sentinel-2 image, ground truth, and U-Net, D-LinkNet and TerraMind + FCN predictions with their IoU and APLS scores.">
+        </a>
+        <figcaption><strong>Rural, peri-urban and urban test tiles.</strong> U-Net keeps dense urban streets separate, whereas D-LinkNet and TerraMind + FCN merge them into blobs. Select the image to enlarge.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== Findings and limitations ===== -->
+  <section class="section is-alt" id="findings" aria-labelledby="findings-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="findings-title">Findings and limitations</h2>
+      <div class="columns is-variable is-5">
+        <div class="column is-7">
+          <h3 class="subsection-title mt-0">What we found</h3>
+          <ul class="finding-list">
+            <li><strong>FCN is TerraMind's best decoder.</strong> Multi-scale decoders do worse: every token covers 160&nbsp;m × 160&nbsp;m, so interpolated feature pyramids blur road width.</li>
+            <li><strong>How a decoder uses the features matters more than its size.</strong> A single transposed convolution stays within 0.012 IoU of the best decoder, though its speckled output gives the worst APLS.</li>
+            <li><strong>Vanilla LoRA cannot match full fine-tuning.</strong> Recall is preserved but precision drops by roughly nine percent, and the gap widens on the connectivity metrics.</li>
+            <li><strong>U-Net wins overall.</strong> It beats every TerraMind configuration on all six metrics with a quarter of the parameters; skip connections give its decoder 20&nbsp;m features.</li>
+            <li><strong>TerraMind is competitive only in cities.</strong> Its urban APLS is close to the baselines, but sparse rural roads pull its overall score down.</li>
+          </ul>
+        </div>
+        <div class="column is-5">
+          <h3 class="subsection-title mt-0">Limitations and future work</h3>
+          <ul class="finding-list is-limits">
+            <li>TerraMind's 160&nbsp;m tokens are the bottleneck; resolution-preserving pathways look more promising than heavier decoders.</li>
+            <li>Only vanilla LoRA with γ = 1/r was tested; rank-stabilised scaling or AdaLoRA may close the gap.</li>
+            <li>One learning rate was tuned per model because of compute limits.</li>
+            <li>Converting masks to graphs for APLS can add noise to that metric.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Downloads & citation ===== -->
+  <section class="section" id="downloads" aria-labelledby="downloads-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="downloads-title">Downloads</h2>
+      <div class="doc-list">
+        <a class="doc" href="final-paper.pdf">
+          <i class="fas fa-file-pdf doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">Final paper</span><span class="doc-meta">Adapting and Benchmarking TerraMind Against Task-Specific Baselines for Multi-Modal Road Extraction across Urban, Peri-Urban and Rural Regions</span></span>
+          <span class="doc-size">PDF · 10.1 MB</span>
+        </a>
+        <a class="doc" href="literature-review.pdf">
+          <i class="fas fa-file-pdf doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">Literature review</span><span class="doc-meta">Road Extraction with InstaGeo: A Literature Review</span></span>
+          <span class="doc-size">PDF · 458 KB</span>
+        </a>
+        <div class="doc is-missing">
+          <i class="fas fa-file-archive doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">Source code</span><span class="doc-meta">li/li_code.zip: TerraTorch configs, DSCNet and D-LinkNet integration, LoRA experiments</span></span>
+          <span class="doc-size"><span class="todo">TODO</span></span>
+        </div>
+        <a class="doc" href="../index.html#dataset">
+          <i class="fas fa-database doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">ROSA dataset</span><span class="doc-meta">Shared dataset: see the project page</span></span>
+          <span class="doc-size">Project page</span>
+        </a>
+      </div>
+
+      <h3 class="subsection-title" id="cite">Cite this work</h3>
+      <div class="bibtex">
+        <button class="button is-small is-light copy-btn" type="button" data-copy="bibtex-li">
+          <span class="icon"><i class="fas fa-copy" aria-hidden="true"></i></span><span class="copy-label">Copy</span>
+        </button>
+        <pre id="bibtex-li">@techreport{li2026terramind,
+  author      = {Li, Catherine},
+  title       = {Adapting and Benchmarking {TerraMind} Against Task-Specific Baselines
+                 for Multi-Modal Road Extraction across Urban, Peri-Urban and Rural Regions},
+  institution = {Department of Computer Science, University of Cape Town},
+  type        = {Honours project report},
+  year        = {2026}
+}</pre>
+      </div>
+
+      <a class="back-home" href="../index.html"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to the InstaRoad project page</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== Shared footer (keep in sync across all pages) ===== -->
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <p class="footer-title">InstaRoad · UCT Computer Science Honours Project, 2026</p>
+      <p>Catherine Li, Kelvin Wei and Jing Yeh, supervised by Patrick Marais and Jonathan Shock. Department of Computer Science, University of Cape Town.</p>
+      <p>Built with the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template">Academic Project Page Template</a>, adapted from <a href="https://nerfies.github.io">Nerfies</a>, and licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+    </div>
+    <nav aria-label="Footer">
+      <ul class="footer-links">
+        <li><a href="../index.html">Project home</a></li>
+        <li><a href="../li/index.html">Catherine Li</a></li>
+        <li><a href="../wei/index.html">Kelvin Wei</a></li>
+        <li><a href="../yeh/index.html">Jing Yeh</a></li>
+        <li><a href="#top">Back to top</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+<a class="to-top" href="#top" aria-label="Back to top"><i class="fas fa-chevron-up" aria-hidden="true"></i></a>
+</body>
+</html>

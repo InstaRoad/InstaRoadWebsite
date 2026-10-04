@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kelvin Wei — Improving SAM-Road for Road Graph Extraction | InstaRoad</title>
+  <meta name="description" content="Kelvin Wei's InstaRoad sub-project: adapting SAM-Road to extract road network graphs from 10 m Sentinel-1/2 imagery across South Africa.">
+  <meta name="author" content="Kelvin Wei">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/bulma.min.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/fontawesome.all.min.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body id="top">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ===== Shared navigation (keep in sync across all pages) ===== -->
+<header class="site-nav">
+  <nav class="nav-inner" aria-label="Site">
+    <a class="nav-brand" href="../index.html">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="#0f172a"/><path d="M7 29c2-8 7-11 11-14s6-7 7-12" fill="none" stroke="#f0a500" stroke-width="5.5" stroke-linecap="round"/><path d="M7 29c2-8 7-11 11-14s6-7 7-12" fill="none" stroke="#0f172a" stroke-width="1.2" stroke-dasharray="2.2 2.4"/></svg>
+      <span>InstaRoad</span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Project home</a>
+      <a href="../index.html#dataset">Dataset</a>
+      <a href="../index.html#demo">Demo</a>
+      <a href="../index.html#documents">Documents</a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="../li/index.html">Catherine Li</a>
+      <a href="../wei/index.html" aria-current="page">Kelvin Wei</a>
+      <a href="../yeh/index.html">Jing Yeh</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- ===== Header ===== -->
+  <section class="member-hero" aria-labelledby="page-title">
+    <div class="container is-max-desktop">
+      <div class="member-hero-inner">
+        <!-- Optional photo: <span class="avatar is-large is-wei"><img src="img/photo.webp" alt="Kelvin Wei"></span> -->
+        <span class="avatar is-large is-wei" aria-hidden="true">KW</span>
+        <div>
+          <p class="eyebrow">Kelvin Wei · Graph extraction sub-project</p>
+          <h1 class="member-title" id="page-title">Improving SAM-Road for Road Network Graph Extraction from Medium-Resolution Sentinel Imagery in South Africa</h1>
+          <p class="member-role">Kelvin adapted SAM-Road, a state-of-the-art road-graph model, to multi-band 10&nbsp;m Sentinel imagery, built the ROSA dataset pipeline, and integrated the models into InstaGeo.</p>
+          <p class="affiliation">Supervisors: Patrick Marais and Jonathan P. Shock · Department of Computer Science, University of Cape Town</p>
+        </div>
+      </div>
+      <div class="link-row is-left">
+        <a class="button is-dark is-rounded" href="final-paper.pdf">
+          <span class="icon"><i class="fas fa-file-pdf" aria-hidden="true"></i></span><span>Final paper</span>
+        </a>
+        <a class="button is-dark is-rounded" href="literature-review.pdf">
+          <span class="icon"><i class="fas fa-book-open" aria-hidden="true"></i></span><span>Literature review</span>
+        </a>
+        <a class="button is-dark is-rounded" href="#downloads">
+          <span class="icon"><i class="fas fa-file-archive" aria-hidden="true"></i></span><span>Code</span>
+        </a>
+        <a class="button is-rounded" href="../index.html">
+          <span class="icon"><i class="fas fa-arrow-left" aria-hidden="true"></i></span><span>Project home</span>
+        </a>
+      </div>
+      <nav class="local-nav" aria-label="On this page">
+        <a href="#contribution">Contribution</a>
+        <a href="#goals">Goals</a>
+        <a href="#method">Method</a>
+        <a href="#results">Results</a>
+        <a href="#findings">Findings</a>
+        <a href="#downloads">Downloads</a>
+        <a href="#cite">Cite</a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- ===== At a glance ===== -->
+  <section class="section pt-0" aria-label="At a glance">
+    <div class="container is-max-desktop">
+      <div class="stat-grid is-compact">
+        <div class="stat">
+          <span class="stat-value">49.79<span class="stat-unit">APLS</span></span>
+          <span class="stat-label">Best model: SGCN segmentation with Sentinel-1/2 bands (mean of 3 seeds)</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">+2.69<span class="stat-unit">APLS</span></span>
+          <span class="stat-label">Over the SAM-Road baseline on enhanced RGB (47.10)</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">12<span class="stat-unit">bands</span></span>
+          <span class="stat-label">Enhanced RGB plus Sentinel-1 radar and Sentinel-2 multispectral input</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">&lt;30<span class="stat-unit">s / tile</span></span>
+          <span class="stat-label">Inference per 512 × 512 tile on a 2016-era GTX 1060 GPU</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Contribution ===== -->
+  <section class="section is-alt" id="contribution" aria-labelledby="contribution-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="contribution-title">Contribution</h2>
+      <div class="contribution is-wei">
+        <p class="prose">
+          Kelvin's sub-project asks whether SAM-Road, designed for sub-metre aerial photographs, can extract road
+          graphs from free 10&nbsp;m Sentinel imagery. Alongside the modelling work, Kelvin built much of the data
+          infrastructure behind the shared ROSA dataset.
+          <span class="todo">TODO: Kelvin to confirm wording and split of dataset work</span>
+        </p>
+        <ul class="check-list">
+          <li><strong>ROSA dataset pipeline.</strong> Cloud-free Sentinel-1/2 mosaics from Google Earth Engine, CD:NGI label filtering and width-aware rasterisation, stratified zone sampling, 512 × 512 tiling, graph labels and per-tile metadata.</li>
+          <li><strong>Training data loader.</strong> On-the-fly 2× bicubic upsampling with masks re-rasterised from vectors, road-aware random crops and augmentations, and sliding-window inference.</li>
+          <li><strong>SAM-Road modifications.</strong> Swapped SAM for the TerraMind geospatial backbone, replaced the segmentation component with hierarchical U-Net and SGCN models, and added mask skeletonisation before vertex extraction.</li>
+          <li><strong>Evaluation.</strong> Graph (APLS) and pixel metrics over three seeds, paired Wilcoxon signed-rank tests, and breakdowns by urbanisation and biome.</li>
+          <li><strong>InstaGeo integration.</strong> An end-to-end pipeline from imagery download to predicted road graphs on a web map.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Goals ===== -->
+  <section class="section" id="goals" aria-labelledby="goals-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="goals-title">Goals and research questions</h2>
+      <p class="prose">
+        SAM-Road predicts road graphs directly and parallelises well, which makes it attractive for country-scale
+        mapping, but it was designed for RGB aerial imagery. At 10&nbsp;m, small roads shrink to one or two pixels,
+        Sentinel provides many more bands than RGB, and a vision-transformer backbone may lose fine local detail when
+        it splits the image into patches. The goal was to modify SAM-Road's segmentation component to handle these
+        differences.
+      </p>
+      <h3 class="subsection-title">Research questions <span class="todo">TODO: match the wording in your paper/proposal</span></h3>
+      <ol class="rq-list">
+        <li>Does replacing SAM's natural-image backbone with a geospatial foundation model (TerraMind) improve road extraction from Sentinel imagery?</li>
+        <li>Do hierarchical CNN segmentation models (U-Net, SGCN), which preserve local features, outperform the transformer-based component at 10&nbsp;m?</li>
+        <li>Do Sentinel-1 radar and additional Sentinel-2 bands improve on enhanced RGB alone?</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===== Method ===== -->
+  <section class="section is-alt" id="method" aria-labelledby="method-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="method-title">Method</h2>
+      <figure class="figure">
+        <a href="img/samroad-modifications.webp" title="Open full-size image">
+          <img src="img/samroad-modifications.webp" width="1546" height="644" loading="lazy"
+               alt="Pipeline diagram: satellite imagery enters a road segmentation component (SAM or TerraMind encoder, or a U-Net or SGCN decoder), producing road and intersection masks; the road mask is skeletonised, NMS extracts graph vertices, and a bilinear sampler and topology decoder predict the road graph.">
+        </a>
+        <figcaption><strong>Modified SAM-Road pipeline.</strong> Orange components were changed in this project (encoder backbone, hierarchical CNN decoder, skeletonisation); blue components are inherited from SAM-Road.</figcaption>
+      </figure>
+      <h3 class="subsection-title">Key steps</h3>
+      <ol class="steps">
+        <li><strong>Prepare inputs.</strong> Twelve bands per tile: contrast-enhanced RGB plus Sentinel-1 radar and Sentinel-2 multispectral bands. Random 128 × 128 crops are upsampled 2× (bicubic) to 5&nbsp;m, and masks are re-rasterised from the road vectors to avoid upsampling artefacts.</li>
+        <li><strong>Segment roads.</strong> The segmentation component (SAM or TerraMind encoder, or a U-Net or SGCN model) predicts a road mask and an intersection mask.</li>
+        <li><strong>Skeletonise.</strong> Small holes are filled and the road mask is thinned to one pixel, so non-maximum suppression places graph vertices on road centrelines.</li>
+        <li><strong>Predict topology.</strong> Features are bilinearly sampled at each vertex and a transformer-based graph decoder predicts which vertices are connected.</li>
+        <li><strong>Infer at scale.</strong> Overlapping sliding windows cover each 512 × 512 tile; thresholds are tuned on the validation split.</li>
+        <li><strong>Evaluate.</strong> APLS for graph topology and precision, recall and F1 for the masks, over three seeds with paired Wilcoxon signed-rank tests.</li>
+      </ol>
+      <p class="note">Training: equally weighted BCE + Dice loss, Adam (base learning rate 10<sup>−3</sup>, pretrained encoder 0.1×), batch size 16, 100 epochs.</p>
+    </div>
+  </section>
+
+  <!-- ===== Results ===== -->
+  <section class="section" id="results" aria-labelledby="results-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="results-title">Results</h2>
+
+      <figure class="table-figure">
+        <figcaption><strong>Model benchmark on the ROSA test set.</strong> Values with ± are the mean ± standard deviation over 3 seeds; others are single-seed. Best value per column in bold.</figcaption>
+        <div class="table-container">
+          <table class="table results is-hoverable is-fullwidth">
+            <thead>
+              <tr>
+                <th scope="col">Model</th>
+                <th scope="col">Pretraining</th>
+                <th scope="col" class="num">Params (M)</th>
+                <th scope="col" class="num">GFLOPs</th>
+                <th scope="col" class="num">Precision</th>
+                <th scope="col" class="num">Recall</th>
+                <th scope="col" class="num">F1</th>
+                <th scope="col" class="num">APLS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="is-group"><th scope="rowgroup" colspan="8">Enhanced RGB input</th></tr>
+              <tr>
+                <th scope="row">SAM-Road (baseline)</th><td>SA-1B</td>
+                <td class="num">87.21</td><td class="num">69.37</td><td class="num">61.31 ± 0.71</td>
+                <td class="num best">60.06 ± 0.24</td><td class="num best">58.78 ± 0.40</td><td class="num best">47.10 ± 0.43</td>
+              </tr>
+              <tr>
+                <th scope="row">U-Net</th><td>ImageNet</td>
+                <td class="num best">24.90</td><td class="num best">15.65</td><td class="num">59.71</td>
+                <td class="num">56.70</td><td class="num">56.05</td><td class="num">45.43</td>
+              </tr>
+              <tr>
+                <th scope="row">SGCN</th><td>–</td>
+                <td class="num">44.36</td><td class="num">151.74</td><td class="num best">63.90</td>
+                <td class="num">54.88</td><td class="num">57.33</td><td class="num">45.41</td>
+              </tr>
+              <tr>
+                <th scope="row">TerraMind</th><td>TerraMesh</td>
+                <td class="num">86.41</td><td class="num">44.27</td><td class="num">57.34</td>
+                <td class="num">58.15</td><td class="num">55.73</td><td class="num">42.87</td>
+              </tr>
+              <tr class="is-group"><th scope="rowgroup" colspan="8">Enhanced RGB + Sentinel-1/2 bands (12 bands)</th></tr>
+              <tr class="is-ours">
+                <th scope="row">SGCN</th><td>–</td>
+                <td class="num">44.37</td><td class="num">152.42</td><td class="num best">65.56 ± 0.48</td>
+                <td class="num">60.17 ± 0.72</td><td class="num best">61.04 ± 0.37</td><td class="num best">49.79 ± 1.55</td>
+              </tr>
+              <tr>
+                <th scope="row">U-Net</th><td>ImageNet</td>
+                <td class="num best">24.93</td><td class="num best">16.57</td><td class="num">62.94 ± 0.76</td>
+                <td class="num best">60.26 ± 0.67</td><td class="num">59.85 ± 0.22</td><td class="num">48.92 ± 0.17</td>
+              </tr>
+              <tr>
+                <th scope="row">TerraMind</th><td>TerraMesh</td>
+                <td class="num">88.18</td><td class="num">88.66</td><td class="num">62.09</td>
+                <td class="num">59.62</td><td class="num">58.65</td><td class="num">45.88</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </figure>
+
+      <div class="columns is-variable is-5 mt-5">
+        <div class="column">
+          <figure class="table-figure">
+            <figcaption><strong>Graph construction ablation</strong> (SGCN, Sentinel-1/2; APLS, mean of 3 seeds). Skeletonisation significantly beats NMS alone overall, peri-urban and rural (paired Wilcoxon, p &lt; 0.001). CRESI post-processing is significantly better in rural areas and worse in urban areas.</figcaption>
+            <div class="table-container">
+              <table class="table results is-fullwidth">
+                <thead>
+                  <tr><th scope="col">Method</th><th scope="col" class="num">All</th><th scope="col" class="num">Urban</th><th scope="col" class="num">Peri-urban</th><th scope="col" class="num">Rural</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">NMS only</th><td class="num">48.89</td><td class="num">63.62</td><td class="num">41.47</td><td class="num">41.37</td></tr>
+                  <tr class="is-ours"><th scope="row">+ skeletonisation</th><td class="num">49.79</td><td class="num">63.62</td><td class="num">42.65</td><td class="num">42.95</td></tr>
+                  <tr><th scope="row">CRESI post-processing</th><td class="num">50.56</td><td class="num">62.61</td><td class="num">43.67</td><td class="num">45.47</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </figure>
+        </div>
+        <div class="column">
+          <figure class="table-figure">
+            <figcaption><strong>Speed vs accuracy</strong> of sliding-window inference: APLS and seconds per 512 × 512 tile for each window grid (single seed, GTX 1060). The 4 × 4 grid has no overlap between windows.</figcaption>
+            <div class="table-container">
+              <table class="table results is-fullwidth">
+                <thead>
+                  <tr><th scope="col">Model</th><th scope="col" class="num">16 × 16</th><th scope="col" class="num">8 × 8</th><th scope="col" class="num">4 × 4</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">SGCN</th><td class="num">51.45 · 27.5 s</td><td class="num">49.60 · 7.2 s</td><td class="num">23.53 · 2.1 s</td></tr>
+                  <tr><th scope="row">U-Net</th><td class="num">49.11 · 5.1 s</td><td class="num">48.09 · 1.6 s</td><td class="num">19.65 · 0.8 s</td></tr>
+                  <tr><th scope="row">SAM-Road</th><td class="num">47.47 · 17.0 s</td><td class="num">45.38 · 6.4 s</td><td class="num">21.24 · 2.2 s</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </figure>
+        </div>
+      </div>
+
+      <h3 class="subsection-title">Example predictions</h3>
+      <div class="columns is-variable is-5">
+        <div class="column">
+          <figure class="compare">
+            <div class="compare-frame">
+              <img src="../assets/img/jhb-ground-truth.webp" width="1200" height="700" loading="lazy"
+                   alt="Ground-truth road network over a suburban Johannesburg tile">
+              <img class="compare-top" src="../assets/img/jhb-prediction.webp" width="1200" height="700" loading="lazy"
+                   alt="Predicted road graph over the same Johannesburg tile">
+              <span class="compare-tag is-left">Prediction</span>
+              <span class="compare-tag is-right">Ground truth</span>
+              <input class="compare-range" type="range" min="0" max="100" value="50" step="0.5"
+                     aria-label="Compare prediction and ground truth, Johannesburg">
+              <span class="compare-handle" aria-hidden="true"></span>
+            </div>
+            <figcaption><strong>Urban success: Johannesburg (APLS 0.85).</strong> A dense, regular street grid is recovered almost completely.</figcaption>
+          </figure>
+        </div>
+        <div class="column">
+          <figure class="compare">
+            <div class="compare-frame">
+              <img src="img/karoo-ground-truth.webp" width="1200" height="700" loading="lazy"
+                   alt="Ground-truth road over a rural Succulent Karoo tile">
+              <img class="compare-top" src="img/karoo-prediction.webp" width="1200" height="700" loading="lazy"
+                   alt="Predicted road graph over the same Succulent Karoo tile">
+              <span class="compare-tag is-left">Prediction</span>
+              <span class="compare-tag is-right">Ground truth</span>
+              <input class="compare-range" type="range" min="0" max="100" value="50" step="0.5"
+                     aria-label="Compare prediction and ground truth, Succulent Karoo">
+              <span class="compare-handle" aria-hidden="true"></span>
+            </div>
+            <figcaption><strong>Rural failure: Succulent Karoo (APLS 0.27).</strong> Faint tracks in sparse vegetation are fragmented or missed.</figcaption>
+          </figure>
+        </div>
+      </div>
+      <p class="note"><span class="todo">TODO: confirm the model and seed behind these examples; add more tiles if useful</span></p>
+
+      <figure class="figure is-medium mt-5">
+        <img src="img/skeletonisation.webp" width="667" height="194" loading="lazy"
+             alt="Four panels: a thick predicted road mask and its zig-zag graph, then the skeletonised mask and its straight graph along the road centreline.">
+        <figcaption><strong>Why skeletonise?</strong> Vertices picked from a thick mask make the graph zig-zag across the road (left); thinning the mask first keeps the graph on the centreline (right).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== Findings and limitations ===== -->
+  <section class="section is-alt" id="findings" aria-labelledby="findings-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="findings-title">Findings and limitations</h2>
+      <div class="columns is-variable is-5">
+        <div class="column is-7">
+          <h3 class="subsection-title mt-0">What we found</h3>
+          <ul class="finding-list">
+            <li><strong>Extra bands help every model.</strong> Sentinel-1/2 input beats enhanced RGB for all variants, though enhanced RGB carries most of the signal.</li>
+            <li><strong>SAM's pretraining is hard to beat on RGB.</strong> With RGB alone, the original SAM-Road outperforms the TerraMind, U-Net and SGCN replacements.</li>
+            <li><strong>SGCN is best but costly.</strong> It reaches 49.79 ± 1.55 APLS with Sentinel-1/2 bands but needs ~152 GFLOPs and varies across seeds; U-Net reaches 48.92 ± 0.17 at about a tenth of the compute.</li>
+            <li><strong>Skeletonisation matters.</strong> Thinning masks before vertex extraction significantly improves APLS (p = 1.1 × 10<sup>−6</sup>), mostly outside cities.</li>
+            <li><strong>Learned graph decoding suits cities.</strong> SAM-Road's graph decoder beats hand-crafted CRESI post-processing in urban areas, but post-processing wins in rural regions.</li>
+          </ul>
+        </div>
+        <div class="column is-5">
+          <h3 class="subsection-title mt-0">Limitations</h3>
+          <ul class="finding-list is-limits">
+            <li>CD:NGI labels are imperfect; only the test split was manually cleaned.</li>
+            <li>Images were upsampled 2× (5&nbsp;m) rather than the more common 4×, due to compute limits.</li>
+            <li>Yearly mosaics hide seasonal variation and fast-changing roads.</li>
+            <li>Small roads and long-range connectivity remain hard because tiles are predicted independently.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Downloads & citation ===== -->
+  <section class="section" id="downloads" aria-labelledby="downloads-title">
+    <div class="container is-max-desktop">
+      <h2 class="section-title" id="downloads-title">Downloads</h2>
+      <div class="doc-list">
+        <a class="doc" href="final-paper.pdf">
+          <i class="fas fa-file-pdf doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">Final paper</span><span class="doc-meta">Improving SAM-Road for Road Network Graph Extraction from Medium Resolution Sentinel Imagery in South Africa</span></span>
+          <span class="doc-size">PDF · 10.1 MB</span>
+        </a>
+        <a class="doc" href="literature-review.pdf">
+          <i class="fas fa-file-pdf doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">Literature review</span><span class="doc-meta">Geospatial Deep Learning for Road Network Detection: A Literature Review</span></span>
+          <span class="doc-size">PDF · 596 KB</span>
+        </a>
+        <div class="doc is-missing">
+          <i class="fas fa-file-archive doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">Source code</span><span class="doc-meta">wei/wei_code.zip: SAM-Road modifications, data loader, ROSA pipeline, InstaGeo integration</span></span>
+          <span class="doc-size"><span class="todo">TODO</span></span>
+        </div>
+        <a class="doc" href="../index.html#dataset">
+          <i class="fas fa-database doc-icon" aria-hidden="true"></i>
+          <span><span class="doc-title">ROSA dataset</span><span class="doc-meta">Shared dataset: see the project page</span></span>
+          <span class="doc-size">Project page</span>
+        </a>
+      </div>
+
+      <h3 class="subsection-title" id="cite">Cite this work</h3>
+      <div class="bibtex">
+        <button class="button is-small is-light copy-btn" type="button" data-copy="bibtex-wei">
+          <span class="icon"><i class="fas fa-copy" aria-hidden="true"></i></span><span class="copy-label">Copy</span>
+        </button>
+        <pre id="bibtex-wei">@techreport{wei2026samroad,
+  author      = {Wei, Kelvin and Marais, Patrick and Shock, Jonathan P.},
+  title       = {Improving {SAM-Road} for Road Network Graph Extraction from
+                 Medium Resolution {Sentinel} Imagery in {South Africa}},
+  institution = {Department of Computer Science, University of Cape Town},
+  type        = {Honours project report},
+  year        = {2026}
+}</pre>
+      </div>
+
+      <a class="back-home" href="../index.html"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to the InstaRoad project page</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== Shared footer (keep in sync across all pages) ===== -->
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <p class="footer-title">InstaRoad · UCT Computer Science Honours Project, 2026</p>
+      <p>Catherine Li, Kelvin Wei and Jing Yeh, supervised by Patrick Marais and Jonathan Shock. Department of Computer Science, University of Cape Town.</p>
+      <p>Built with the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template">Academic Project Page Template</a>, adapted from <a href="https://nerfies.github.io">Nerfies</a>, and licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+    </div>
+    <nav aria-label="Footer">
+      <ul class="footer-links">
+        <li><a href="../index.html">Project home</a></li>
+        <li><a href="../li/index.html">Catherine Li</a></li>
+        <li><a href="../wei/index.html">Kelvin Wei</a></li>
+        <li><a href="../yeh/index.html">Jing Yeh</a></li>
+        <li><a href="#top">Back to top</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+<a class="to-top" href="#top" aria-label="Back to top"><i class="fas fa-chevron-up" aria-hidden="true"></i></a>
+</body>
+</html>

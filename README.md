@@ -1,80 +1,111 @@
-# Academic Project Page Template
+# InstaRoad — Honours project website (draft)
 
-> **Update (September 2025)**: This template has been modernized with better design, SEO, and mobile support. For the original version, see the [original-version branch](https://github.com/eliahuhorwitz/Academic-project-page-template/tree/original-version).
+Static project website for **InstaRoad** (UCT Computer Science Honours, 2026):
+Catherine Li, Kelvin Wei and Jing Yeh, supervised by Patrick Marais and Jonathan Shock.
 
-A clean, responsive template for academic project pages.
+The site follows the department brief: fully static, relative links only, `index.html` at the
+root, a group page plus one page per member, documents as PDF and code as archives.
 
+## Preview
 
-Example project pages built using this template are:
-- https://horwitz.ai/probex
-- https://vision.huji.ac.il/probegen
-- https://horwitz.ai/mother
-- https://horwitz.ai/spectral_detuning
-- https://vision.huji.ac.il/ladeda
-- https://vision.huji.ac.il/dsire
-- https://horwitz.ai/podd
-- https://dreamix-video-editing.github.io
-- https://horwitz.ai/conffusion
-- https://horwitz.ai/3d_ads/
-- https://vision.huji.ac.il/ssrl_ad
-- https://vision.huji.ac.il/deepsim
+Open `index.html` directly in a browser, or serve the folder:
 
+```bash
+python3 -m http.server 8765
+```
 
+then visit <http://localhost:8765>.
 
-## Start using the template
-To start using the template click on `Use this Template`.
+## Structure
 
-The template uses html for controlling the content and css for controlling the style. 
-To edit the websites contents edit the `index.html` file. It contains different HTML "building blocks", use whichever ones you need and comment out the rest.  
+```
+index.html                  group page (overview, results, sub-projects, dataset, demo, poster, documents)
+assets/
+  css/bulma.min.css         Bulma 0.9.1 (vendored)
+  css/site.css              all custom styles: shared, edit with care
+  js/fontawesome.all.min.js Font Awesome 5 icons (vendored, works offline)
+  js/site.js                comparison sliders, copy buttons, back-to-top
+  img/                      shared figures + favicon
+docs/
+  proposal.pdf              joint documents (add poster.pdf, dataset datasheet/sample here)
+li/   index.html, img/, final-paper.pdf, literature-review.pdf   Catherine
+wei/  index.html, img/, final-paper.pdf, literature-review.pdf   Kelvin
+yeh/  index.html, img/, final-paper.pdf, literature-review.pdf   Jing
+```
 
-**IMPORTANT!** Make sure to replace the `favicon.ico` under `static/images/` with one of your own, otherwise your favicon is going to be a dreambooth image of me.
+Ownership: each member edits only their own folder; the group page and `assets/` are shared,
+so coordinate changes there. Always link to `folder/index.html`, never `folder/`, so pages
+work when opened from disk.
 
-## What's New
+## Editing a member page
 
-- Modern, clean design with better mobile support
-- Improved SEO with proper meta tags and structured data
-- Performance improvements (lazy loading, optimized assets)
-- More Works dropdown
-- Copy button for BibTeX citations
-- Better accessibility
+All three member pages use the same sections: header, at-a-glance stats, contribution, goals and
+research questions, method, results, findings and limitations, downloads, citation. Copy an existing
+block rather than inventing new markup. Useful building blocks in `site.css`:
 
-## Components
+| Block | Markup |
+| --- | --- |
+| Figure | `<figure class="figure"><img …><figcaption>…</figcaption></figure>` (`is-medium` / `is-narrow` to limit width) |
+| Before/after slider | `<figure class="compare">` (see the teaser in `index.html`): two images of identical size |
+| Results table | `<figure class="table-figure">` with a `figcaption` and `table.table.results`; mark cells with `num`, `best`, rows with `is-ours` |
+| Numbered steps / RQs | `<ol class="steps">`, `<ol class="rq-list">` |
+| Findings | `<ul class="finding-list">` (`is-limits` for the grey variant) |
+| Downloads | `<a class="doc" href="…">`; use `<div class="doc is-missing">` until the file exists |
+| Draft marker | `<span class="todo">TODO: …</span>` |
 
-- Teaser video
-- Image carousel
-- YouTube video embedding
-- Video carousel
-- PDF poster viewer
-- BibTeX citation
+Images: export at about 1200–1600 px wide and convert to WebP, e.g. `cwebp -q 85 in.png -o out.webp`.
+Always set `width`, `height` and meaningful `alt` text.
 
-## Customization
+## Open TODOs
 
-The HTML file has TODO comments showing what to replace:
+Every unfinished item is marked visibly on the pages. List them with:
 
-- Paper title, authors, institution, conference
-- Links (arXiv, GitHub, etc.)
-- Abstract and descriptions  
-- Videos, images, and PDFs
-- Related works in the dropdown
-- Meta tags for SEO and social sharing
+```bash
+grep -rn 'class="todo' --include='*.html' .
+```
 
-### Meta Tags
-The template includes meta tags for better search engine visibility and social media sharing. These appear in the `<head>` section and help with:
-- Google Scholar indexing
-- Social media previews (Twitter, Facebook, LinkedIn)
-- Search engine optimization
+Placeholder external links use the reserved `.invalid` domain, so link checkers flag them:
 
-Create a 1200x630px social preview image at `static/images/social_preview.png`.
+```bash
+grep -rn '\.invalid' --include='*.html' .
+```
 
-## Tips
+Main gaps in this draft:
 
-- Compress images with [TinyPNG](https://tinypng.com)
-- Use YouTube for large videos (>10MB)  
-- Replace the favicon in `static/images/`
-- Works with GitHub Pages
+- [ ] Live demo URL and a screenshot or short MP4 (`assets/img/demo-screenshot.webp`)
+- [ ] Poster PDF (`docs/poster.pdf`), then switch the placeholder to the commented-out `<iframe>`
+- [ ] Dataset: Zenodo DOI, CD:NGI licence check, small sample and datasheet in `docs/`
+- [ ] Code archives: `li/li_code.zip`, `wei/wei_code.zip`, `yeh/yeh_code.zip`
+- [ ] Reconcile ROSA counts (Kelvin's paper: 1,247 tiles / 65 zones; Jing's paper: 1,254 chips / 60 regions)
+- [ ] Confirm which model produced the Johannesburg and Karoo example predictions
+- [ ] Each member: check contribution wording, research questions (Kelvin's were paraphrased) and figures
+- [ ] Optional: member photos (see the comment in each member header)
+- [ ] Confirm acknowledgements and the project abbreviation used in the ZIP name
 
-## Acknowledgments
-Parts of this project page were adopted from the [Nerfies](https://nerfies.github.io/) page.
+Content was drafted from the final papers, proposal and literature reviews in the shared drive. The
+PDFs in `li/`, `wei/`, `yeh/` and `docs/` are copies of those files. The final papers are large
+(10–20 MB); swap in compressed versions if the archive size matters.
 
-## Website License
-<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+## Before submitting
+
+1. Remove every `todo` marker and `.invalid` link.
+2. Validate every page with the Nu HTML Checker (<https://validator.w3.org/nu/>) or locally:
+   `java -jar vnu.jar --also-check-css --skip-non-html .` (the jar ships in the `vnu-jar` npm package).
+3. Check links, for example with `lychee --offline .`.
+4. Keep the ZIP lean: compress images, documents as PDF, code as `.zip`.
+5. Build the ZIP from inside this folder so `index.html` sits at the top level:
+
+   ```bash
+   zip -r ../instaroad_li_wei_yeh.zip . -x '.git/*' '.claude/*' '.nojekyll' 'README.md' '*.DS_Store'
+   ```
+
+6. Unzip it into an empty folder and click through every page via `file://`.
+7. One member uploads it at <http://projects.cs.uct.ac.za/honsproj/> ("Upload File" next to 2026).
+   Re-uploading overwrites the previous file.
+
+## Credits
+
+Layout adapted from the [Academic Project Page Template](https://github.com/eliahuhorwitz/Academic-project-page-template)
+(adapted from [Nerfies](https://nerfies.github.io)), licensed under
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Uses [Bulma](https://bulma.io) (MIT) and
+[Font Awesome Free](https://fontawesome.com) (icons CC BY 4.0, code MIT).
