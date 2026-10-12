@@ -79,7 +79,6 @@ Main gaps in this draft:
 - [ ] Reconcile ROSA counts (Kelvin's paper: 1,247 tiles / 65 zones; Jing's paper: 1,254 chips / 60 regions)
 - [ ] Confirm which model produced the Johannesburg and Karoo example predictions
 - [ ] Each member: check contribution wording, research questions (Kelvin's were paraphrased) and figures
-- [ ] Optional: member photos (see the comment in each member header)
 - [ ] Confirm acknowledgements and the project abbreviation used in the ZIP name
 
 Content was drafted from the final papers, proposal and literature reviews in the shared drive. The

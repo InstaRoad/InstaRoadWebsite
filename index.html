@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>InstaRoad — Road Network Extraction from Sentinel Imagery | UCT CS Honours 2026</title>
-  <meta name="description" content="InstaRoad: a UCT Computer Science Honours project (2026) on deep-learning road network extraction from free 10 m Sentinel-1/2 satellite imagery across South Africa.">
+  <title>InstaRoad</title>
+  <meta name="description" content="InstaRoad: UCT Computer Science Honours project on deep-learning road network extraction from freely available 10 m Sentinel-1/2 satellite imagery across South Africa.">
   <meta name="author" content="Catherine Li, Kelvin Wei, Jing Yeh">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/bulma.min.css">
@@ -15,7 +15,7 @@
 <body id="top">
 <a class="skip-link" href="#main">Skip to content</a>
 
-<!-- ===== Shared navigation (keep in sync across all pages) ===== -->
+<!-- ===== Shared navigation ===== -->
 <header class="site-nav">
   <nav class="nav-inner" aria-label="Site">
     <a class="nav-brand" href="index.html" aria-current="page">
@@ -24,7 +24,6 @@
     </a>
     <div class="nav-links">
       <a href="#overview">Overview</a>
-      <a href="#results">Results</a>
       <a href="#dataset">Dataset</a>
       <a href="#demo">Demo</a>
       <a href="#documents">Documents</a>
@@ -41,7 +40,6 @@
   <!-- ===== Hero ===== -->
   <section class="project-hero" aria-labelledby="project-title">
     <div class="container is-max-desktop">
-      <p class="eyebrow">UCT Computer Science Honours Project · 2026</p>
       <h1 class="project-title" id="project-title">InstaRoad</h1>
       <p class="project-subtitle">Deep learning for road network extraction from open-access, medium-resolution Sentinel satellite imagery across South Africa</p>
       <p class="authors">
@@ -61,7 +59,7 @@
           <span class="icon"><i class="fas fa-database" aria-hidden="true"></i></span><span>Dataset</span>
         </a>
         <a class="button is-dark is-rounded" href="#demo">
-          <span class="icon"><i class="fas fa-desktop" aria-hidden="true"></i></span><span>Live demo</span>
+          <span class="icon"><i class="fas fa-desktop" aria-hidden="true"></i></span><span>Demo</span>
         </a>
         <a class="button is-dark is-rounded" href="#documents">
           <span class="icon"><i class="fas fa-folder-open" aria-hidden="true"></i></span><span>All documents</span>
@@ -86,9 +84,7 @@
           <span class="compare-handle" aria-hidden="true"></span>
         </div>
         <figcaption>
-          <strong>Drag to compare.</strong> Road graph extracted from 10 m Sentinel-1/2 imagery (left) versus
-          government CD:NGI road labels (right) on a suburban Johannesburg test tile (APLS 0.85).
-          <span class="todo">TODO: confirm which model produced this prediction</span>
+          <strong>Left:</strong> Road graph extracted from 10 m Sentinel-1/2 imagery. <strong>Right:</strong> Ground truth road labels in Johannesburg.
         </figcaption>
       </figure>
     </div>
@@ -101,85 +97,58 @@
       <div class="columns is-variable is-6">
         <div class="column is-7 prose">
           <p>
-            Road maps underpin disaster response, urban planning and environmental monitoring. Roads act as both
-            barriers and corridors for wildlife and invasive species, and new roads are an early signal of urban
-            expansion. Deep learning can extract road networks from satellite imagery automatically, but almost all
-            of that work relies on <strong>expensive high-resolution imagery of cities</strong>, leaving rural and
-            peri-urban regions underserved.
+            We develop AI tools to monitor how road networks change over time, based on satellite imagery. 
+            This supports urban planning and assessing the environmental impact of road networks.
+            Deep learning can extract road networks from satellite imagery at scale, but relies on costly high-resolution imagery, and licensing often restricts model training. 
+            Freely available Sentinel satellite imagery is a promising alternative, which covers the globe every few days. 
+            However, this data is relatively low resolution, which makes it challenging to extract fine-grained and thin road structures. 
           </p>
           <p>
-            InstaRoad asks how far we can get with <strong>free 10 m Sentinel-1 (radar) and Sentinel-2 (optical)
-            imagery</strong> across South Africa. We built a new dataset, ROSA, that spans all nine biomes and urban,
+            InstaRoad explores road network extraction with 10 m Sentinel-1 (radar) and Sentinel-2 (optical)
+            imagery across South Africa. We built a new dataset, ROSA, that spans all nine biomes and urban,
             peri-urban and rural regions, and used it to explore three complementary approaches: adapting a
-            geospatial foundation model, extending a state-of-the-art road-graph extractor, and steering pretrained
-            super-resolution with the road-segmentation objective. The models were then integrated into InstaGeo,
-            an end-to-end geospatial machine-learning framework.
+            geospatial foundation model, graph-based road extraction, and super-resolution. 
+            The models can be integrated into an end-to-end geospatial web application framework, such as InstaGeo. 
           </p>
         </div>
         <div class="column is-5">
           <div class="why-box">
-            <h3>Why medium-resolution imagery?</h3>
+            <h3>Why Sentinel Satellite Imagery?</h3>
             <ul class="icon-list">
-              <li><i class="fas fa-fw fa-hand-holding-usd" aria-hidden="true"></i><span><strong>Free.</strong> Copernicus data is open-access. A single very-high-resolution mosaic of Darfur was once quoted at USD 4&nbsp;million.</span></li>
-              <li><i class="fas fa-fw fa-sync-alt" aria-hidden="true"></i><span><strong>Frequent.</strong> A ~5-day revisit makes it possible to track road development over time.</span></li>
-              <li><i class="fas fa-fw fa-globe-africa" aria-hidden="true"></i><span><strong>Wide coverage.</strong> Consistent global coverage, including rural areas commercial datasets rarely target.</span></li>
-              <li><i class="fas fa-fw fa-layer-group" aria-hidden="true"></i><span><strong>Multi-modal.</strong> Optical, infrared and radar bands; radar sees through cloud.</span></li>
+              <li><i class="fas fa-fw fa-hand-holding-usd" aria-hidden="true"></i><span><strong>Free.</strong> 
+                  The data freely available to the public. 
+                  In contrast, a single very-high-resolution mosaic of Darfur can be quoted at $4&nbsp;million.</span></li>
+              <li><i class="fas fa-fw fa-sync-alt" aria-hidden="true"></i><span><strong>Frequent.</strong> A roughly 5-day revisit makes it possible to track road development over time.</span></li>
+              <li><i class="fas fa-fw fa-globe-africa" aria-hidden="true"></i><span><strong>Wide coverage.</strong> Consistent global coverage, including remote and underpresented areas.</span></li>
+              <li><i class="fas fa-fw fa-layer-group" aria-hidden="true"></i><span><strong>Multi-modal.</strong> Additional optical, infrared and radar bands can enhance RGB imagery</span></li>
             </ul>
-            <p class="why-catch"><strong>The catch:</strong> at 10 m per pixel most roads are only one or two pixels wide.</p>
+            <p class="why-catch"><strong>The Problem:</strong> 10m spatial resolution, results in 1-2 pixel or less than a pixel wide roads.</p>
           </div>
         </div>
       </div>
 
       <h3 class="subsection-title">Project aims</h3>
       <ol class="aims">
-        <li><strong>Curate a dataset</strong>ROSA: a diverse South African road dataset pairing cloud-free Sentinel-1/2 mosaics with government road labels.</li>
-        <li><strong>Compare three approaches</strong>Model-centric (TerraMind), graph-based (SAM-Road) and data-centric (task-driven super-resolution) road extraction.</li>
-        <li><strong>Evaluate fairly</strong>A shared, manually cleaned test split, pixel- and graph-based metrics, and repeated training seeds.</li>
-        <li><strong>Deploy</strong>Integrate the models into InstaGeo so road networks can be extracted end-to-end from a browser.</li>
+        <li><strong>Curate a Public Dataset</strong> Cloud-free images with road labels were carefully curated to build a public dataset covering diverse regions in South Africa.</li>
+        <li><strong>Explore Road Extraction Approaches</strong>
+            We explore 3 approaches to examine methods utilising geospatial foundational models, graph-based models and super-resolution.
+          <!--<ul class="aim-sublist">
+            <li>Geospatial foundation model (TerraMind)</li>
+            <li>Graph-based road extraction (SAM-Road)</li>
+            <li>Super-resolution road extraction</li>
+          </ul>-->
+        </li>
+        <li><strong>Deploy</strong>Integrate the models into web application framework (InstaGeo). Road networks can be extracted end-to-end from a browser.</li>
       </ol>
-    </div>
-  </section>
-
-  <!-- ===== Key results ===== -->
-  <section class="section" id="results" aria-labelledby="results-title">
-    <div class="container is-max-desktop">
-      <h2 class="section-title" id="results-title">Key results</h2>
-      <p class="section-lead">Headline numbers from each sub-project on the ROSA test split. Select a card for the full results.</p>
-      <div class="stat-grid">
-        <a class="stat" href="wei/index.html#results">
-          <span class="stat-value">49.79<span class="stat-unit">APLS</span></span>
-          <span class="stat-label">Best road-graph score: SAM-Road with an SGCN segmentation component and Sentinel-1/2 bands, +2.69 over the SAM-Road baseline.</span>
-          <span class="stat-who">Kelvin Wei →</span>
-        </a>
-        <a class="stat" href="li/index.html#results">
-          <span class="stat-value">0.486<span class="stat-unit">IoU</span></span>
-          <span class="stat-label">A fully fine-tuned U-Net beats every TerraMind adaptation (best 0.415) with about a quarter of the parameters.</span>
-          <span class="stat-who">Catherine Li →</span>
-        </a>
-        <a class="stat" href="yeh/index.html#results">
-          <span class="stat-value">73.20<span class="stat-unit">bF1</span></span>
-          <span class="stat-label">Pretrained SR4RS fine-tuned through a 5-parameter linear head beats the bicubic + U-Net baseline (71.55).</span>
-          <span class="stat-who">Jing Yeh →</span>
-        </a>
-        <a class="stat" href="#dataset">
-          <span class="stat-value">1,247<span class="stat-unit">tiles</span></span>
-          <span class="stat-label">ROSA dataset: 65 zones across 9 biomes and 3 urbanisation levels, with 23 imagery bands.</span>
-          <span class="stat-who">Joint work →</span>
-        </a>
-      </div>
-      <p class="note">Each sub-project uses different inputs, resolutions and metrics, so the numbers are not directly comparable across cards.</p>
     </div>
   </section>
 
   <!-- ===== How the sub-projects fit together ===== -->
   <section class="section is-alt" id="subprojects" aria-labelledby="subprojects-title">
     <div class="container is-max-desktop">
-      <h2 class="section-title" id="subprojects-title">Three sub-projects, one dataset</h2>
-      <p class="section-lead">Each member tackled the 10 m resolution problem from a different angle, using the same dataset and test split.</p>
-
+      <h2 class="section-title" id="subprojects-title">Project Flow</h2>
       <div class="tracks">
         <div class="track-node">
-          <p class="track-kicker">Shared foundation</p>
           <p class="track-name">ROSA: Roads of South Africa dataset</p>
           <p>Cloud-free Sentinel-1/2 mosaics with CD:NGI road labels across 9 biomes and urban, peri-urban and rural regions.</p>
         </div>
@@ -188,7 +157,6 @@
         <div class="track-cols">
           <article class="member-card is-li">
             <div class="member-head">
-              <span class="avatar is-li" aria-hidden="true">CL</span>
               <div>
                 <p class="track-kicker">Model-centric</p>
                 <h3><a href="li/index.html">Catherine Li</a></h3>
@@ -196,25 +164,23 @@
             </div>
             <p class="member-project">Adapting the TerraMind geospatial foundation model</p>
             <p>Compares five decoders and LoRA fine-tuning for TerraMind on multi-modal Sentinel-1/2 input, benchmarked against U-Net and D-LinkNet.</p>
-            <a class="member-link" href="li/index.html">View sub-project <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            <a class="member-link" href="li/index.html">More Details <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
           </article>
 
           <article class="member-card is-wei">
             <div class="member-head">
-              <span class="avatar is-wei" aria-hidden="true">KW</span>
               <div>
                 <p class="track-kicker">Graph extraction</p>
                 <h3><a href="wei/index.html">Kelvin Wei</a></h3>
               </div>
             </div>
             <p class="member-project">Improving SAM-Road for road-graph extraction</p>
-            <p>Adapts SAM-Road to multi-band 10 m imagery with new backbones, CNN segmentation components and skeletonisation; built the ROSA pipeline and the InstaGeo integration.</p>
-            <a class="member-link" href="wei/index.html">View sub-project <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            <p>Adapts SAM-Road to multi-band 10 m imagery with new backbones, CNN segmentation components and skeletonisation. Built the ROSA pipeline and the InstaGeo integration.</p>
+            <a class="member-link" href="wei/index.html">More Details <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
           </article>
 
           <article class="member-card is-yeh">
             <div class="member-head">
-              <span class="avatar is-yeh" aria-hidden="true">JY</span>
               <div>
                 <p class="track-kicker">Data-centric</p>
                 <h3><a href="yeh/index.html">Jing Yeh</a></h3>
@@ -222,7 +188,7 @@
             </div>
             <p class="member-project">Task-driven super-resolution for road segmentation</p>
             <p>Fine-tunes pretrained super-resolution models with the road-segmentation loss, and tests whether a high-capacity segmenter is needed at all.</p>
-            <a class="member-link" href="yeh/index.html">View sub-project <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            <a class="member-link" href="yeh/index.html">More Details <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
           </article>
         </div>
 
@@ -249,31 +215,29 @@
           </figure>
         </div>
         <div class="column is-6">
-          <div class="prose">
-            <p>
-              ROSA pairs cloud-free 2020 Sentinel-1/2 mosaics, composited in Google Earth Engine, with road
-              centrelines from South Africa's Chief Directorate: National Geo-spatial Information (CD:NGI).
-              Urban zones were hand-picked in every biome; peri-urban and rural zones were drawn by stratified random
-              sampling over biome, urbanisation and road presence. The test split was manually checked against
-              high-resolution basemaps.
-            </p>
-          </div>
           <dl class="facts">
             <div><dt>Tiles</dt><dd>1,247 tiles of 512 × 512 px at 10 m</dd></div>
             <div><dt>Splits</dt><dd>65 zones: 883 train / 190 validation / 174 test tiles</dd></div>
             <div><dt>Bands</dt><dd>23: Sentinel-2 optical, Sentinel-1 SAR, elevation, urban masks and enhanced RGB</dd></div>
             <div><dt>Labels</dt><dd>Road and intersection masks, vector centrelines and graph adjacency lists</dd></div>
-            <div><dt>Strata</dt><dd>9 biomes (+ azonal vegetation) × urban / peri-urban / rural</dd></div>
+            <div><dt>Stratification</dt><dd>9 biomes with urban, peri-urban, rural regions</dd></div>
             <div><dt>Size</dt><dd>11 GB</dd></div>
           </dl>
-          <p class="note"><span class="todo">TODO: reconcile counts. Kelvin's paper: 1,247 tiles / 65 zones; Jing's paper: 1,254 chips / 60 regions</span></p>
-          <div class="link-row is-left">
+          <!--<div class="link-row is-left">
             <a class="button is-dark is-rounded" href="https://TODO-zenodo-doi.invalid">
               <span class="icon"><i class="fas fa-download" aria-hidden="true"></i></span><span>Download (Zenodo)</span>
             </a>
-          </div>
-          <p class="note"><span class="todo">TODO: host the full dataset on Zenodo (DOI), check CD:NGI licence terms, and add a small sample + datasheet to docs/</span></p>
+          </div>-->
         </div>
+      </div>
+      <div class="prose">
+        <p>
+          ROSA pairs cloud-free 2020 Sentinel-1/2 mosaics, composited in Google Earth Engine, with road
+          centrelines from South Africa's Chief Directorate: National Geo-spatial Information (CD:NGI).
+          Urban zones were hand-picked in every biome; peri-urban and rural zones were drawn by stratified random
+          sampling over biome, urbanisation and road presence. The test split was manually checked against
+          high-resolution basemaps.
+        </p>
       </div>
     </div>
   </section>
@@ -281,36 +245,45 @@
   <!-- ===== Demo ===== -->
   <section class="section is-alt" id="demo" aria-labelledby="demo-title">
     <div class="container is-max-desktop">
-      <h2 class="section-title" id="demo-title">Live demo: InstaRoad in InstaGeo</h2>
+      <h2 class="section-title" id="demo-title">Demo</h2>
       <div class="columns is-variable is-6 is-vcentered">
         <div class="column is-7">
-          <!-- Replace with a screenshot (assets/img/demo-screenshot.webp) or a short MP4 so the page
-               still shows the app once the hosted demo goes offline. -->
-          <div class="placeholder is-tall">
-            <div>Demo screenshot or short screen recording
-              <small>Save as assets/img/demo-screenshot.webp (or .mp4) and replace this box</small>
+          <figure class="compare">
+            <div class="compare-frame">
+              <img src="assets/img/road-change-after.webp" width="768" height="512" loading="lazy"
+                   alt="Roads extracted by the demo from a 2025 Sentinel mosaic, drawn in yellow over farmland and a settlement">
+              <img class="compare-top" src="assets/img/road-change-before.webp" width="768" height="512" loading="lazy"
+                   alt="Roads extracted by the demo from a 2015 Sentinel mosaic of the same area, with fewer roads detected">
+              <span class="compare-tag is-left">2015</span>
+              <span class="compare-tag is-right">2025</span>
+              <input class="compare-range" type="range" min="0" max="100" value="50" step="0.5"
+                     aria-label="Compare roads extracted from 2015 and 2025 imagery">
+              <span class="compare-handle" aria-hidden="true"></span>
             </div>
-          </div>
+            <figcaption>
+              <strong>Road change detection with the demo.</strong> Roads extracted from two Sentinel mosaics of the
+              same area (yellow). Drag to compare road predictions between 2015 and 2025.
+            </figcaption>
+          </figure>
         </div>
         <div class="column is-5">
           <div class="prose">
             <p>
-              Our road-extraction models run end-to-end inside <strong>InstaGeo</strong>, an open-source geospatial
-              machine-learning framework. We added the GlobalUrbanMapper data engine as an imagery source, so the app
-              fetches the same cloud-free Sentinel mosaics the models were trained on, then renders the predicted
-              road centrelines over the imagery in a web map.
+              Our road-extraction models can run end-to-end on a web application. 
+              We utilised the GlobalUrbanMapper GEE data engine as an imagery source, so the app fetches cloud-free Sentinel mosaics. 
+              The predicted roads are overlayed on the imagery in a web map.
+              This allows for practical applications such as detecting changes in road networks over time.
             </p>
           </div>
           <div class="link-row is-left">
-            <a class="button is-dark is-rounded" href="https://TODO-demo-url.invalid" target="_blank" rel="noopener">
+            <a class="button is-dark is-rounded" href="https://geosamroad.kelvinwei.com" target="_blank" rel="noopener">
               <span class="icon"><i class="fas fa-external-link-alt" aria-hidden="true"></i></span>
-              <span>Live demo<span class="button-note">(external, non-permanent)</span></span>
+              <span>Demo<span class="button-note">(external, non-permanent)</span></span>
             </a>
           </div>
           <p class="note">
             <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
             External, non-permanent link: the hosted demo may be taken offline after the project ends.
-            <span class="todo">TODO: add demo URL</span>
           </p>
         </div>
       </div>
@@ -322,7 +295,7 @@
     <div class="container is-max-desktop">
       <h2 class="section-title" id="poster-title">Poster</h2>
       <!-- When the poster exists: save it as docs/poster.pdf, delete the placeholder, and uncomment: -->
-      <iframe class="poster-frame" src="docs/poster.pdf" title="InstaRoad project poster" width="100%" height="720"></iframe>
+      <iframe class="poster-frame" src="docs/poster.pdf" title="InstaRoad project poster" height="720"></iframe>
       <p class="note"><a href="docs/poster.pdf">Download the poster (PDF, 12.6 MB)</a></p>
      
       <!-- <div class="placeholder is-tall">
@@ -343,21 +316,19 @@
         <a class="doc" href="docs/proposal.pdf">
           <i class="fas fa-file-pdf doc-icon" aria-hidden="true"></i>
           <span><span class="doc-title">Project proposal</span><span class="doc-meta">Deep Learning for Road Network Extraction from Open-Access Low-Resolution Satellite Imagery in South African Geographies</span></span>
-          <span class="doc-size">PDF · 1.4 MB</span>
+          <span class="doc-size">PDF · 1.5 MB</span>
         </a>
-        <div class="doc-list">
         <a class="doc" href="docs/poster.pdf">
           <i class="fas fa-file-pdf doc-icon" aria-hidden="true"></i>
           <span><span class="doc-title">Project poster</span><span class="doc-meta">docs/poster.pdf</span></span>
           <span class="doc-size">PDF · 12.6 MB</span>
         </a>
-        </div>
-        <div class="doc is-missing">
+      </div>
+        <!--<div class="doc is-missing">
           <i class="fas fa-file-alt doc-icon" aria-hidden="true"></i>
           <span><span class="doc-title">ROSA datasheet and sample tiles</span><span class="doc-meta">docs/rosa-datasheet.pdf, docs/rosa-sample.zip</span></span>
           <span class="doc-size"><span class="todo">TODO</span></span>
-        </div>
-      </div>
+        </div>-->
 
       <h3 class="subsection-title">Individual work</h3>
       <figure class="table-figure">
@@ -370,20 +341,20 @@
             <tbody>
               <tr>
                 <th scope="row"><a href="li/index.html">Catherine Li</a></th>
-                <td><a href="li/final-paper.pdf">PDF · 10.1 MB</a></td>
-                <td><a href="li/literature-review.pdf">PDF · 458 KB</a></td>
+                <td><a href="li/final-paper.pdf">PDF · 10.6 MB</a></td>
+                <td><a href="li/literature-review.pdf">PDF · 469 KB</a></td>
                 <td><a href="li/li_code.zip">ZIP · 13.9 MB</a></td>
               </tr>
               <tr>
                 <th scope="row"><a href="wei/index.html">Kelvin Wei</a></th>
-                <td><a href="wei/final-paper.pdf">PDF · 10.1 MB</a></td>
-                <td><a href="wei/literature-review.pdf">PDF · 596 KB</a></td>
-                <td><span class="todo">TODO: wei/wei_code.zip</span></td>
+                <td><a href="wei/final-paper.pdf">PDF · 10.6 MB</a></td>
+                <td><a href="wei/literature-review.pdf">PDF · 610 KB</a></td>
+                <td><a href="wei/wei.zip">ZIP · 14.6 MB</a></td>
               </tr>
               <tr>
                 <th scope="row"><a href="yeh/index.html">Jing Yeh</a></th>
-                <td><a href="yeh/final-paper.pdf">PDF · 20.1 MB</a></td>
-                <td><a href="yeh/literature-review.pdf">PDF · 421 KB</a></td>
+                <td><a href="yeh/final-paper.pdf">PDF · 21.1 MB</a></td>
+                <td><a href="yeh/literature-review.pdf">PDF · 431 KB</a></td>
                 <td><span class="todo">TODO: yeh/yeh_code.zip</span></td>
               </tr>
             </tbody>
@@ -398,10 +369,9 @@
     <div class="container is-max-desktop">
       <h2 class="section-title" id="ack-title">Acknowledgements</h2>
       <p class="prose">
-        We thank our supervisors, Prof. Patrick Marais and Prof. Jonathan Shock, for their guidance and detailed
-        feedback; the UCT ICT High Performance Computing team for compute resources; the Shock Lab computer vision
-        reading group; and Lavinia Perumal (African Climate and Development Initiative, UCT) for context on the
-        impact of roads. <span class="todo">TODO: team to confirm</span>
+        We thank our supervisors, Prof. Patrick Marais and Prof. Jonathan Shock, for their guidance and detailed feedback; 
+        the Shock Lab computer vision reading group; 
+        and Lavinia Perumal (African Climate and Development Initiative, UCT) for context on the impact of roads. 
       </p>
     </div>
   </section>
