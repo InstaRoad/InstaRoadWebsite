@@ -46,7 +46,7 @@
         <div>
           <p class="eyebrow">Catherine Li · Model-centric sub-project</p>
           <h1 class="member-title" id="page-title">Adapting and Benchmarking TerraMind Against Task-Specific Baselines for Multi-Modal Road Extraction across Urban, Peri-Urban and Rural Regions</h1>
-          <p class="member-role">Catherine adapted TerraMind, a multi-modal geospatial foundation model, for 10&nbsp;m road segmentation by comparing decoders and LoRA fine-tuning, and benchmarked it against task-specific U-Net and D-LinkNet models.</p>
+          <p class="member-role">Catherine adapted TerraMind, a multi-modal geospatial foundation model, for 10&nbsp;m road segmentation by (1) comparing decoders and fine-tuning fully versus using the LoRA approach, and (2) benchmarking it against task-specific U-Net and D-LinkNet models.</p>
           <p class="affiliation">Supervisors: Patrick Marais and Jonathan Shock · Department of Computer Science, University of Cape Town</p>
         </div>
       </div>
@@ -82,11 +82,11 @@
       <div class="stat-grid is-compact">
         <div class="stat">
           <span class="stat-value">0.486<span class="stat-unit">IoU</span></span>
-          <span class="stat-label">U-Net (ResNet-34): the strongest model overall</span>
+          <span class="stat-label">U-Net (ResNet-34 backbone): the strongest model overall</span>
         </div>
         <div class="stat">
           <span class="stat-value">0.415<span class="stat-unit">IoU</span></span>
-          <span class="stat-label">Best TerraMind adaptation: FCN decoder with full fine-tuning</span>
+          <span class="stat-label">Best TerraMind adaptation: FCN decoder with full fine-tuning. Decoders using single-scale features outperform multi-scale ones. LoRA fine-tuning could not match the performance offull fine-tuning.</span>
         </div>
         <div class="stat">
           <span class="stat-value">¼<span class="stat-unit">of the parameters</span></span>
@@ -108,15 +108,15 @@
         <p class="prose">
           Catherine's sub-project tests whether a geospatial foundation model pretrained on Sentinel data can match
           smaller, task-specific networks for road extraction across urban, peri-urban and rural South Africa.
-          <span class="todo">TODO: Catherine to confirm wording</span>
+          <!-- <span class="todo">TODO: Catherine to confirm wording</span> -->
         </p>
         <ul class="check-list">
           <li><strong>TerraMind adaptation framework.</strong> Built in TerraTorch with 12-band Sentinel-1/2 input; compared Linear, FCN, UPerNet, U-Net and DSCNet decoders under full fine-tuning.</li>
-          <li><strong>DSCNet decoder port.</strong> Decoupled the Dynamic Snake Convolution decoder from its original model and registered it with TerraTorch for multi-scale TerraMind features.</li>
+          <li><strong>DSCNet Decoder Selection.</strong> Decoupled the Dynamic Snake Convolution Network (DSCNet) decoder from its original model and registered it with TerraTorch for multi-scale TerraMind features. </li>
           <li><strong>LoRA study.</strong> Parameter-efficient fine-tuning across target modules (attention, MLP, all) and ranks 4, 16 and 64, with a generalisation-gap analysis.</li>
           <li><strong>Baselines.</strong> Integrated D-LinkNet into TerraTorch for multi-band input and benchmarked it alongside U-Net, both with ResNet-34 encoders.</li>
           <li><strong>Evaluation.</strong> Bayesian hyperparameter optimisation, three seeds per configuration, six metrics (precision, recall, F1, IoU, clDice, APLS) and per-urbanisation breakdowns.</li>
-          <li><strong>Dataset.</strong> Identified urban sampling regions across biomes and inspected the test-split labels. <span class="todo">TODO: confirm</span></li>
+          <!-- <li><strong>Dataset.</strong> Identified urban sampling regions across biomes and inspected the test-split labels. </li> <span class="todo">TODO: confirm</span> -->
         </ul>
       </div>
     </div>
@@ -130,8 +130,7 @@
         Geospatial foundation models are pretrained on vast amounts of unlabelled satellite data and promise strong
         results with little task-specific tuning. TerraMind is multi-modal, taking Sentinel-1 radar and Sentinel-2
         optical input together, and was the only foundation model reported to beat a task-specific U-Net on the
-        PANGAEA benchmark. Roads, however, are often narrower than a 10&nbsp;m pixel, so it is unclear whether a
-        transformer that sees the image as 16 × 16-pixel patches can resolve them.
+        PANGAEA benchmark. Perhaps a larger pretrained model would perform better at the complex task of road extraction.
       </p>
       <h3 class="subsection-title">Research questions</h3>
       <ol class="rq-list">
@@ -158,10 +157,10 @@
           <ol class="steps">
             <li><strong>Input.</strong> Twelve bands, Sentinel-1 GRD (VV, VH) and Sentinel-2 L2A (RGB, red edge, NIR, SWIR), as 256 × 256 crops with dataset-specific normalisation and flip/rotation augmentation.</li>
             <li><strong>Encode.</strong> TerraMind v1 Base embeds each modality's 16 × 16 patches as 768-d tokens and processes them with a 12-layer vision transformer.</li>
-            <li><strong>Decode.</strong> A neck reshapes tokens into feature maps (a learned pyramid for multi-scale decoders); one of five decoders predicts the road mask.</li>
+            <li><strong>Decode.</strong> A neck reshapes tokens into feature maps; one of five decoders predicts the road mask.</li>
             <li><strong>Fine-tune.</strong> Full fine-tuning, or LoRA on attention, MLP or all modules with rank 4, 16 or 64.</li>
             <li><strong>Baselines.</strong> U-Net and D-LinkNet with ImageNet ResNet-34 encoders adapted for 12 input bands.</li>
-            <li><strong>Train and evaluate.</strong> Dice loss, AdamW, learning rate from Bayesian optimisation, early stopping and three seeds; six metrics on the test split, overall and by urbanisation.</li>
+            <li><strong>Train and evaluate.</strong> Dice loss, AdamW, learning rate from Bayesian optimisation, early stopping and three seeds to measure training variance; six metrics on the test split measuring performance overall and by urbanisation.</li>
           </ol>
         </div>
       </div>
@@ -270,20 +269,18 @@
         <div class="column is-7">
           <h3 class="subsection-title mt-0">What we found</h3>
           <ul class="finding-list">
-            <li><strong>FCN is TerraMind's best decoder.</strong> Multi-scale decoders do worse: every token covers 160&nbsp;m × 160&nbsp;m, so interpolated feature pyramids blur road width.</li>
-            <li><strong>How a decoder uses the features matters more than its size.</strong> A single transposed convolution stays within 0.012 IoU of the best decoder, though its speckled output gives the worst APLS.</li>
+            <li><strong>FCN is TerraMind's best decoder.</strong> The smallest decoder (the Linear decoder with a single transposed convolution) stays within 0.012 IoU of the FCN decoder (though its speckled output gives the worst APLS). Multi-scale decoders do worse than single-scale decoders (FCN and Linear): the feature pyramids are obtained through learned interpolation that may have obscured road width without offering finer resolution.</li>
             <li><strong>Vanilla LoRA cannot match full fine-tuning.</strong> Recall is preserved but precision drops by roughly nine percent, and the gap widens on the connectivity metrics.</li>
-            <li><strong>U-Net wins overall.</strong> It beats every TerraMind configuration on all six metrics with a quarter of the parameters; skip connections give its decoder 20&nbsp;m features.</li>
+            <li><strong>U-Net wins overall.</strong> It beats every TerraMind configuration on all six metrics with a quarter of the parameters; skip connections give its decoder 20&nbsp;m features compared to the 160&nbsp;m features in TerraMind's tokens.</li>
             <li><strong>TerraMind is competitive only in cities.</strong> Its urban APLS is close to the baselines, but sparse rural roads pull its overall score down.</li>
           </ul>
         </div>
         <div class="column is-5">
           <h3 class="subsection-title mt-0">Limitations and future work</h3>
           <ul class="finding-list is-limits">
-            <li>TerraMind's 160&nbsp;m tokens are the bottleneck; resolution-preserving pathways look more promising than heavier decoders.</li>
-            <li>Only vanilla LoRA with γ = 1/r was tested; rank-stabilised scaling or AdaLoRA may close the gap.</li>
+            <li>TerraMind's 160&nbsp;m tokens are the bottleneck; detail enhancement approaches - like Fast Fourier Transform- look more promising than scaling model.</li>
+            <li>Only vanilla LoRA with scaling factor 1/r was tested; rank-stabilised scaling or AdaLoRA may close the gap.</li>
             <li>One learning rate was tuned per model because of compute limits.</li>
-            <li>Converting masks to graphs for APLS can add noise to that metric.</li>
           </ul>
         </div>
       </div>
@@ -305,12 +302,13 @@
           <span><span class="doc-title">Literature review</span><span class="doc-meta">Road Extraction with InstaGeo: A Literature Review</span></span>
           <span class="doc-size">PDF · 458 KB</span>
         </a>
-        <div class="doc is-missing">
+        <a class="doc" href="li_code.zip">
           <i class="fas fa-file-archive doc-icon" aria-hidden="true"></i>
-          <span><span class="doc-title">Source code</span><span class="doc-meta">li/li_code.zip: TerraTorch configs, DSCNet and D-LinkNet integration, LoRA experiments</span></span>
-          <span class="doc-size"><span class="todo">TODO</span></span>
-        </div>
-        <a class="doc" href="../index.html#dataset">
+          <span><span class="doc-title">Source code</span><span class="doc-meta">li_code.zip: TerraTorch configs, DSCNet and D-LinkNet integration, LoRA experiments</span></span>
+          <span class="doc-size">ZIP · 13.22 MB</span>
+        </a>
+      </div>
+      <a class="doc" href="../index.html#dataset">
           <i class="fas fa-database doc-icon" aria-hidden="true"></i>
           <span><span class="doc-title">ROSA dataset</span><span class="doc-meta">Shared dataset: see the project page</span></span>
           <span class="doc-size">Project page</span>
