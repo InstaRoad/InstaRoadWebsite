@@ -43,7 +43,7 @@
       <div class="member-hero-inner">
         <div>
           <h1 class="member-title" id="page-title">Task-Driven Super-Resolution+: Guiding Pretrained Super-Resolution to Enhance Road Segmentation from 10&nbsp;m Sentinel-2 Imagery</h1>
-          <p class="member-role">Jing fine-tuned pretrained super-resolution models directly on the road-segmentation objective, without any high-resolution imagery, and tested whether a heavy segmentation network is still needed afterwards.</p>
+          <p class="member-role">Jing's thesis starts from a simple idea: our 10&nbsp;m Sentinel-2 images are too coarse to segment roads accurately, so can we make them better? Jing fine-tuned a pretrained super-resolution model using only the road-segmentation loss, so that its output becomes more useful to the road detector. Along the way, it turned out that a 24.2&nbsp;M-parameter U-Net is not needed: with SR4RS, a five-parameter logistic head reached the highest buffered F1 of any configuration, though its connectivity (APLS) is lower than the bicubic baseline and every jointly trained U-Net.</p>
           <p class="affiliation">Supervisors: Patrick Marais and Jonathan P. Shock</p>
         </div>
       </div>
@@ -54,7 +54,7 @@
         <a class="button is-dark is-rounded" href="literature-review.pdf">
           <span class="icon"><i class="fas fa-book-open" aria-hidden="true"></i></span><span>Literature review</span>
         </a>
-        <a class="button is-dark is-rounded" href="#downloads">
+        <a class="button is-dark is-rounded" href="yeh_code.tar">
           <span class="icon"><i class="fas fa-file-archive" aria-hidden="true"></i></span><span>Code</span>
         </a>
         <a class="button is-rounded" href="../index.html">
@@ -105,7 +105,6 @@
         <p class="prose">
           Jing's sub-project treats super-resolution not as a fixed preprocessing step but as a trainable part of the
           road extractor, guided only by road labels.
-          <span class="todo">TODO: Jing to confirm wording</span>
         </p>
         <ul class="check-list">
           <li><strong>TDSR-JT.</strong> Joint fine-tuning of a pretrained super-resolution model (SEN2SR-Lite or SR4RS) and a ResNet-34 U-Net using only the segmentation loss, with differential learning rates.</li>
@@ -282,11 +281,11 @@
           <span><span class="doc-title">Literature review</span><span class="doc-meta">InstaRoad: Detecting Road Networks from Medium Resolution Satellite Imagery</span></span>
           <span class="doc-size">PDF · 431 KB</span>
         </a>
-        <div class="doc is-missing">
+        <a class="doc" href="yeh_code.tar">
           <i class="fas fa-file-archive doc-icon" aria-hidden="true"></i>
-          <span><span class="doc-title">Source code</span><span class="doc-meta">yeh/yeh_code.zip: TDSR-JT, TDSR-LP-FT, adaptive standardisation, loss study</span></span>
-          <span class="doc-size"><span class="todo">TODO</span></span>
-        </div>
+          <span><span class="doc-title">Source code</span><span class="doc-meta">yeh/yeh_code.tar: TDSR-JT, TDSR-LP-FT, adaptive standardisation, loss study</span></span>
+          <span class="doc-size"><span class="doc-size">TAR 20.8 MB</span></span>
+        </a>
         <a class="doc" href="../index.html#dataset">
           <i class="fas fa-database doc-icon" aria-hidden="true"></i>
           <span><span class="doc-title">ROSA dataset</span><span class="doc-meta">Shared dataset: see the project page</span></span>
